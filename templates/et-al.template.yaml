@@ -77,14 +77,6 @@ room:
     #include room/instructions.md
   agents: ["coordinator", "scout", "experimenter"]
   users: ["{$creator}", "STUDENT-USERNAME"]
-  # @scribe, @librarian and @runner always reach the right agent, with no
-  # role to claim. (A role is a lease an agent takes with assume_role, so an
-  # agent whose session has ended may not hold it. Aliases avoid that.)
-  # An alias can't share a name with a room role, so don't also add roles.
-  aliases:
-    coordinator: scribe
-    scout: librarian
-    experimenter: runner
 
 kickoff: |
   @coordinator, @scout and @experimenter: this is the research room. Reply with one line saying you're ready, then wait for the PI's first message.

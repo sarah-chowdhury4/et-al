@@ -3,7 +3,7 @@
 Use these messages word for word in every run. Run each demo in a fresh room.
 Two Mattermost windows side by side: **PI** (main account) on the left, **Student** on the right.
 
-Before you start: the room has the coordinator, scout and experimenter, both people, the room instructions from `room/instructions.md`, and the scribe, librarian and runner roles (or aliases, if you built it from the template).
+Before you start: the room has the coordinator, scout and experimenter, both people, the room instructions from `room/instructions.md`.
 
 ## 1. Idea
 
@@ -13,11 +13,11 @@ As the **PI**:
 @coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Please set up a plan.
 ```
 
-Wait for: the coordinator's Timeline (4 to 6 tasks, owners, dates before Dec 1) and its message to @librarian.
+Wait for: the coordinator's Timeline (4 to 6 tasks, owners, dates before Dec 1) and its message to @scout.
 
 ## 2. Foundations
 
-No message. Wait for the scout to fill the Literature document: 3 to 4 theories, about 10 numbered papers with OpenAlex links, ending with "@scribe the papers are ready".
+No message. Wait for the scout to fill the Literature document: 3 to 4 theories, about 10 numbered papers with OpenAlex links, ending with "@coordinator the papers are ready".
 
 ## 3. Dig
 
@@ -48,10 +48,9 @@ Wait for: "recorded in the Decisions log".
 As the **Student**:
 
 ```
-@runner Can you set up a baseline following the Methodology?
+@experimenter Can you set up a baseline following the Methodology?
 ```
 
-If the role mention gets no reply within 2 minutes, use `@experimenter` instead.
 
 Wait for: baseline.py written, run and debugged, the test accuracy, and a proposal asking the PI to approve.
 
@@ -71,7 +70,7 @@ Wait for the refusal ("Only the PI can approve experiments"). Then as the **PI**
 
 ## 7. Results
 
-No message. Wait for the 3-seed table (setting | mean accuracy | std), the line confirming it matched the Methodology, and "@scribe".
+No message. Wait for the 3-seed table (setting | mean accuracy | std), the line confirming it matched the Methodology, and "@coordinator".
 
 ## 8. Record
 

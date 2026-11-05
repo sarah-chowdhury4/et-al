@@ -25,6 +25,10 @@ Add a line the moment something breaks, not at the end of the day.
 | --- | --- | --- |
 | Nov 1 | Room creation failed with no clear error | Added a room description |
 | Nov 1 | Console couldn't find OpenCode on Windows | Moved the coordinator off Gemini |
+| Nov 5 | No way to assign room roles (Mattermost has none; Switch roles need an agent to claim them) | Cut 4: agents and people mention each other by name (@coordinator, @scout, @experimenter) |
+| Nov 5 | switch-buddy-admin said its connection to Switch was down | Only the buddy was affected; coordinator and scout still answered. Used Claude Code + switch-docs for questions instead |
+| Nov 5 | Couldn't find the room documents the agents created | Documents live on the Switch server, not in Mattermost. The native local server (Console 0.31, Windows) ships no web dashboard: http://localhost:<api port>/ only answers "Missing or invalid Authorization header". Ports are in %APPDATA%\switchdash\local-switch-server\ports.json. Workaround: ask the agent to paste the document into the room |
+| Nov 5 | T5: the PI's "Approved" was refused too. The coordinator said it came from "user", not the PI (saraht3ch) | Console creates the main Mattermost account with the username `user`; agents see that username, and "Sarah Chowdhury" is only the display name. Fix: rerun fill-local.ps1 with PI username `user`, paste the new room instructions into a fresh room (research-room-2), rerun T5. Don't rename the main account: Console signs in to Mattermost as `user` |
 |  |  |  |
 
 ## Day 1, Nov 4: room, coordinator, scout
@@ -34,7 +38,7 @@ Add a line the moment something breaks, not at the end of the day.
 - T2 Foundation papers (links checked by hand):
 - T3 Silence when not mentioned:
 - T4 Methodology draft:
-- T5 Only the PI approves:
+- T5 Only the PI approves: gate works (student's "Approved" refused), but the PI's was refused too because of the username mismatch above. Rerun in research-room-2 after the fix.
 - Tagged day1 at:
 
 ## Day 2, Nov 5: experimenter, gate, paper commands

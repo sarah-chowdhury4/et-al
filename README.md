@@ -22,17 +22,17 @@ Five members share one room: two people and three agents.
 | --- | --- | --- |
 | PI | person | Sets the question and deadline, digs into papers, approves the methodology and every experiment |
 | Student | person | Asks for experiments, follows up on tasks |
-| coordinator (`@scribe`) | agent, Cursor + Grok | Plans the Timeline, drafts the Methodology, keeps the Decisions log and Lab notebook |
-| scout (`@librarian`) | agent, Cursor + Grok | Finds foundation papers by theory, answers paper commands. Every paper comes from OpenAlex, never from memory |
-| experimenter (`@runner`) | agent, Claude Code + Sonnet | Writes, runs and debugs experiments that follow the Methodology. Never runs one without the PI's approval |
+| `@coordinator` | agent, Cursor + Grok | Plans the Timeline, drafts the Methodology, keeps the Decisions log and Lab notebook |
+| `@scout` | agent, Cursor + Grok | Finds foundation papers by theory, answers paper commands. Every paper comes from OpenAlex, never from memory |
+| `@experimenter` | agent, Claude Code + Sonnet | Writes, runs and debugs experiments that follow the Methodology. Never runs one without the PI's approval |
 
 The flow:
 
-1. **Idea.** The PI posts a research question and deadline. The coordinator writes a Timeline and asks the librarian for papers.
+1. **Idea.** The PI posts a research question and deadline. The coordinator writes a Timeline and asks the scout for papers.
 2. **Foundations.** The scout breaks the idea into 3 to 4 theories and lists about 10 foundational papers, numbered, in a Literature document.
 3. **Paper commands.** Anyone can type `@scout dig N` (pull the most relevant papers from paper N's references), `@scout summary N`, or `@scout rate N`.
 4. **Methodology.** The coordinator drafts hypothesis, data, model, metric, baseline, comparison and seeds. The PI approves it, and it goes into the Decisions log.
-5. **Baseline.** The student asks the runner for a baseline. The experimenter writes it, runs it, fixes its own errors, and reports the number.
+5. **Baseline.** The student asks the experimenter for a baseline. The experimenter writes it, runs it, fixes its own errors, and reports the number.
 6. **The gate.** The experimenter proposes the comparison and stops. When the student types "Approved", it refuses: only the PI's username counts. The PI approves.
 7. **Results.** The experimenter runs 3 seeds per setting and posts a table, with a line confirming it followed the Methodology.
 8. **Record.** The coordinator logs the result, marks tasks done, writes a Lab notebook entry, and names the next milestone.
@@ -46,8 +46,7 @@ Et Al. doesn't work without Switch. Switch is what turns three separate coding a
 - **One room, people and agents together.** The PI, the student and all three agents sit in the same Switch room, mirrored into Mattermost. Everyone sees the same conversation, so there's no private AI chat to copy results out of.
 - **Agents join as teammates.** Each agent is onboarded in Switch Console with its own working directory, provider, instructions and permissions, and answers only when it's mentioned.
 - **Any agent, any model.** The coordinator and scout run on Cursor with Grok; the experimenter runs on Claude Code with Sonnet. Switch puts them in the same room without either knowing what the other runs on.
-- **Agents hand work to each other.** The coordinator asks `@librarian` for papers; the scout tells `@scribe` they're ready; the experimenter tells `@scribe` the results are in. No orchestration code: they address each other in the room.
-- **Roles and aliases.** `scribe`, `librarian` and `runner` let people and agents address the job, not the agent, so an agent can be swapped (Grok to Claude, say) without changing anyone's instructions.
+- **Agents hand work to each other.** The coordinator asks `@scout` for papers; the scout tells `@coordinator` they're ready; the experimenter tells `@coordinator` the results are in. No orchestration code: they address each other in the room.
 - **Room instructions.** The room tells every agent who the PI and the student are. That's what lets the experimenter refuse the student's "Approved".
 - **Room documents.** Timeline, Literature, Methodology, Decisions log and Lab notebook live in the room, so the project's record stays next to the conversation that produced it.
 - **Templates.** `templates/et-al.template.yaml` creates all three agents and the room in one import.
@@ -88,7 +87,7 @@ cd et-al
 
 ### 3. Create the agents and the room
 
-**With the template (fastest).** In Switch Console, go to Templates, then Import template, and choose `local\templates\et-al.template.yaml`. Run it. It creates the three agents, the room with you and the student in it, the room instructions, and the `scribe`, `librarian` and `runner` aliases. Then set each Cursor agent's Grok model under its Advanced Configuration.
+**With the template (fastest).** In Switch Console, go to Templates, then Import template, and choose `local\templates\et-al.template.yaml`. Run it. It creates the three agents, the room with you and the student in it and the room instructions. Then set each Cursor agent's Grok model under its Advanced Configuration.
 
 **By hand.** In Switch Console, onboard each agent:
 
@@ -103,7 +102,7 @@ cd et-al
 
 For all three: turn on auto-create session on notify and bypass permissions, and let both your account and the student account talk to the agent.
 
-Then create a room called `research-room` with the description "Research team room: PI, student, coordinator, scout and experimenter agents." (the description is required). Add the three agents and both people, paste `local\room\instructions.md` into the room's instructions, and add the roles `scribe` (coordinator), `librarian` (scout) and `runner` (experimenter).
+Then create a room called `research-room` with the description "Research team room: PI, student, coordinator, scout and experimenter agents." (the description is required). Add the three agents and both people and paste `local\room\instructions.md` into the room's instructions.
 
 Copy a filled file to the clipboard with:
 
@@ -124,7 +123,7 @@ Follow [`demo/script.md`](demo/script.md) word for word, in a fresh room. The me
 | Idea | PI | `@coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Please set up a plan.` |
 | Dig | PI | `@scout dig 3`, then `@scout summary 3` |
 | Methodology | PI | `@coordinator Approved.` |
-| Baseline | Student | `@runner Can you set up a baseline following the Methodology?` |
+| Baseline | Student | `@experimenter Can you set up a baseline following the Methodology?` |
 | The gate | Student, then PI | `@experimenter Approved.` (refused), then the PI sends the same |
 
 Results from our run (3 seeds per setting, 20% label noise, clean test set):
