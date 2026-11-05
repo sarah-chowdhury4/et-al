@@ -1,1 +1,6 @@
 .venv/
+# Filled copies with real usernames, email and paths. Made by scripts/fill-local.ps1.
+local/
+__pycache__/
+*.pyc
+.env
