@@ -42,7 +42,7 @@ if (Have docker) {
         if ($names -match '(?i)switch|mattermost') { Pass 'Switch / Mattermost containers are up' }
         else { Warn 'No Switch or Mattermost container running' 'Switch Console: start the local server and wait for "Local server is running"' }
     }
-    else { Fail 'Docker is installed but not running' 'Open Docker Desktop and wait for it to finish starting' }
+    else { Fail 'Docker is installed but not running' 'Open Docker Desktop and wait for it to finish starting (Linux: sudo systemctl start docker)' }
 }
 else { Fail 'docker not found' 'Install Docker Desktop' }
 
@@ -70,7 +70,7 @@ try {
         $branch = (git branch --show-current 2>$null)
         if ($branch -eq 'main') { Pass 'On branch main' } else { Warn "On branch '$branch'" 'Normal only while testing Stage 2 or 3' }
     }
-    else { Fail 'et-al is not a git repo' 'See Day 1 in the build plan: git init ...' }
+    else { Fail 'et-al is not a git repo' 'Clone the repo with git clone (README, Getting started, step 1)' }
 
     $gi = if (Test-Path .gitignore) { Get-Content .gitignore -Raw } else { '' }
     foreach ($entry in @('.venv/', 'local/')) {
@@ -82,11 +82,11 @@ try {
         'room\instructions.md', 'templates\et-al.template.yaml', 'demo\script.md', 'docs\notes.md',
         'workspace\coordinator', 'workspace\scout', 'workspace\experimenter')
     $missing = $need | Where-Object { -not (Test-Path (Join-Path $root $_)) }
-    if ($missing) { Fail "Missing: $($missing -join ', ')" 'Unzip the file pack into et-al' }
+    if ($missing) { Fail "Missing: $($missing -join ', ')" 'Clone the full repo; files are missing' }
     else { Pass 'All repo files and workspace folders exist' }
 
     $empty = $need | Where-Object { (Test-Path (Join-Path $root $_) -PathType Leaf) -and ((Get-Item -Force (Join-Path $root $_)).Length -eq 0) }
-    if ($empty) { Warn "Empty files: $($empty -join ', ')" 'Unzip the file pack, replacing the empty files' }
+    if ($empty) { Warn "Empty files: $($empty -join ', ')" 'Restore them with git checkout -- .' }
 
     # Placeholders must stay in the repo copies (real values only in local\)
     $ph = @{ 'agents\scout.md' = 'YOUR-EMAIL'; 'agents\experimenter.md' = 'PYTHON-PATH'; 'room\instructions.md' = 'PI-USERNAME' }
@@ -160,7 +160,7 @@ foreach ($f in $filled) {
 Write-Host ''
 Write-Host '== Experimenter Python ==' -ForegroundColor Cyan
 
-$py = if ($answers -and $answers.PYTHON) { $answers.PYTHON } else { Join-Path (Split-Path -Parent $root) '.venv\Scripts\python.exe' }
+$py = if ($answers -and $answers.PYTHON) { $answers.PYTHON } elseif ($IsWindows) { Join-Path (Split-Path -Parent $root) '.venv\Scripts\python.exe' } else { Join-Path (Split-Path -Parent $root) '.venv/bin/python' }
 if (Test-Path $py) {
     Pass "Found $py"
     if ($py -match ' ') { Warn 'The Python path contains a space' 'Agents can trip over it; a path without spaces is safer' }
@@ -199,7 +199,7 @@ print(f"acc={acc:.3f} secs={time.time() - t:.1f}")
     }
     else { Fail 'Smoke experiment failed' "$out" }
 }
-else { Fail "No Python at $py" 'Create the venv (build plan, Nov 1), or rerun fill-local.ps1 with the right path' }
+else { Fail "No Python at $py" 'Create the venv (README, Getting started, step 1), or rerun fill-local.ps1 with the right path' }
 
 Write-Host ''
 Write-Host '== Network ==' -ForegroundColor Cyan

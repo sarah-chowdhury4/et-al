@@ -20,7 +20,8 @@ $prev = @{
     PI      = ''
     STUDENT = ''
     EMAIL   = ''
-    PYTHON  = (Join-Path (Split-Path -Parent $root) '.venv\Scripts\python.exe')
+    # The venv next to the repo: Scripts\python.exe on Windows, bin/python on macOS and Linux
+    PYTHON  = if ($IsWindows) { Join-Path (Split-Path -Parent $root) '.venv\Scripts\python.exe' } else { Join-Path (Split-Path -Parent $root) '.venv/bin/python' }
 }
 if (Test-Path $answersFile) {
     $saved = Get-Content $answersFile -Raw | ConvertFrom-Json
@@ -44,7 +45,7 @@ Write-Host 'Four questions. Press Enter to keep the value in [brackets].' -Foreg
 $pi      = (Ask 'PI Mattermost username (your main account, no @)' $prev.PI).TrimStart('@')
 $student = (Ask 'Student Mattermost username (second account, no @)' $prev.STUDENT).TrimStart('@')
 $email   = Ask 'Email for OpenAlex (goes in the scout''s API links)' $prev.EMAIL
-$python  = Ask 'Full path to the experimenter''s python.exe' $prev.PYTHON
+$python  = Ask 'Full path to the experimenter''s Python' $prev.PYTHON
 
 if ($pi -eq $student) { throw 'PI and student must be different usernames.' }
 if ($email -notmatch '^[^@\s]+@[^@\s]+\.[^@\s]+$') { throw "That doesn't look like an email: $email" }

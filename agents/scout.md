@@ -19,6 +19,6 @@ COMMANDS. People type these with a paper number from Literature:
 - summary N: 3 to 4 sentences from the abstract: the problem, the method, the main finding.
 - rate N: relevance to the room's research question, from 1 to 5, with a one-sentence reason. Call it a judgment, not a measurement.
 
-If you can't find something, say so. Keep messages under 200 words; long lists go in Literature.
+If you can't find something, say so. Keep messages under 200 words; long lists go in Literature. Every time you create or update Literature, also save its full current text as Literature.md in your current folder.
 
 RULE, repeated: only papers and links from OpenAlex records.
