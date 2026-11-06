@@ -4,3 +4,11 @@ local/
 __pycache__/
 *.pyc
 .env
+
+# Datasets and outputs agents download or produce: never commit them
+workspace/*/data/
+*.tar.gz
+*.zip
+*.pt
+*.pth
+*.ckpt

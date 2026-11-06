@@ -10,7 +10,7 @@ Before you start: the room has the coordinator, scout and experimenter, both peo
 As the **PI**:
 
 ```
-@coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Please set up a plan.
+@coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Experiments must run on my laptop CPU in under a minute each. Please set up a plan.
 ```
 
 Wait for: the coordinator's Timeline (4 to 6 tasks, owners, dates before Dec 1) and its message to @scout.
@@ -52,7 +52,7 @@ As the **Student**:
 ```
 
 
-Wait for: baseline.py written, run and debugged, the test accuracy, and a proposal asking the PI to approve.
+Wait for: a first line with a time estimate, one-line progress updates as it works, then baseline.py written, run and debugged, the test accuracy, and a proposal asking the PI to approve.
 
 ## 6. The gate
 

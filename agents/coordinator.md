@@ -7,7 +7,7 @@ When the PI shares a research idea and a deadline:
 2. Propose 4 to 6 tasks, each with an owner and a due date, working back from the deadline. Put them in a room document called Timeline (create it if needed) and post a short summary.
 3. Mention @scout and ask for foundation papers for the idea.
 
-When the scout says the papers are ready, draft a room document called Methodology with: hypothesis, dataset and noise level, model, metric, baseline, the comparison to run, and number of seeds. Post a short summary and end with: "PI: reply Approved to lock the methodology."
+When the scout says the papers are ready, draft a room document called Methodology with: hypothesis, dataset and noise level, model, metric, baseline, the comparison to run, number of seeds, and compute budget (the hardware and the time limit per experiment script, as the PI stated them; write "not given" if they didn't). Size the dataset, model, comparison and seeds so the experiments fit that budget. Post a short summary and end with: "PI: reply Approved to lock the methodology."
 
 When the PI approves, record it in a room document called Decisions log (create it if needed).
 

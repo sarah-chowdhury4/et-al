@@ -218,7 +218,7 @@ Use a fresh room for each run, set up the same way as `research-room`, so earlie
 
 | Step | Who | Message |
 | --- | --- | --- |
-| 1. Idea | PI | `@coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Please set up a plan.` |
+| 1. Idea | PI | `@coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Experiments must run on my laptop CPU in under a minute each. Please set up a plan.` |
 | 2. Foundations | — | Wait for the scout's Literature list |
 | 3. Dig | PI | `@scout dig 3`, then `@scout summary 3` |
 | 4. Methodology | PI | `@coordinator Approved.` |
@@ -263,8 +263,8 @@ The workflow:
 
 1. **Idea.** The PI posts a research question and a deadline. The coordinator restates the question, writes a Timeline of 4 to 6 tasks with owners and due dates, and asks the scout for papers.
 2. **Foundations.** The scout breaks the idea into the 3 to 4 theories it rests on and lists about 10 foundational papers, numbered, with citation counts and OpenAlex links.
-3. **Methodology.** The coordinator drafts the hypothesis, data, model, metric, baseline, comparison and number of seeds. The PI approves it, and the approval goes into the Decisions log.
-4. **Baseline.** The student asks for a baseline. The experimenter writes `baseline.py`, runs it, fixes its own errors, and reports the test accuracy.
+3. **Methodology.** The coordinator drafts the hypothesis, data, model, metric, baseline, comparison, number of seeds and compute budget, sized to fit the hardware and time limit the PI gave. The PI approves it, and the approval goes into the Decisions log.
+4. **Baseline.** The student asks for a baseline. The experimenter detects the machine's specs and checks that the Methodology fits its compute budget, asking for a time limit if none was given. It then writes `baseline.py`, runs it, fixes its own errors, and reports the test accuracy, posting progress updates as it goes.
 5. **The gate.** The experimenter proposes the comparison and waits. It checks the sender of every "Approved" against the PI named in the room instructions, so the student's approval is refused.
 6. **Results.** After the PI approves, the experimenter runs `ablation.py` with 3 seeds per setting and posts a table, with a line confirming it followed the Methodology.
 7. **Record.** The coordinator logs the result, marks tasks done, adds a dated Lab notebook entry, and names the next milestone.
@@ -349,6 +349,7 @@ To change an agent's behavior, edit its file in `agents/`, run the fill-local sc
 | A session never starts | The provider is likely waiting on a folder-trust prompt. Make sure **Settings → General → Auto-trust worktree directories** is on |
 | The PI's "Approved" is refused | The room instructions must name the PI by Mattermost username. The account Switch Console creates is `user`, not its display name. Run the fill-local script again with `user` as the PI and paste the new room instructions |
 | An agent receives messages but can't post or read the room, or reports that its Switch connection is down | Fully quit and reopen Switch Console (this also helps after a network change such as a VPN reconnect), then post `!reset @agent-name` in the room and mention the agent again. If that fails, remove the agent and onboard it again |
+| Claude Code agents hear the room but can't reply, reporting an "invalid response" from `127.0.0.1`, while Cursor agents work | Antivirus web protection is intercepting Claude Code's HTTP traffic, including traffic to the local Switch tools. Confirm with `claude mcp list`: if every HTTP server fails with `InvalidHTTPResponse` while `curl` reaches the same URLs, that's the cause. Add exceptions for the `claude` executable and for `http://127.0.0.1/*` and `http://localhost/*` in the antivirus, or turn off its HTTPS scanning, then restart Switch Console. Seen with AVG Web Shield |
 | A provider shows **CLI not installed** after installing it | Fully quit and reopen Switch Console, which reads `PATH` only at startup: **Cmd+Q** on macOS, close the window on Windows, `pkill -x switch-console` on Linux |
 | The experimenter fails with "module not found" | It's using the wrong Python. Check the path in `local/agents/experimenter.md` and run the check-setup script |
 | A paper link doesn't open or doesn't match its title | The scout answered from memory. Restart its session and repeat the request; its instructions require OpenAlex links only |

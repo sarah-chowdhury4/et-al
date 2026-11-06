@@ -29,6 +29,7 @@ Add a line the moment something breaks, not at the end of the day.
 | Nov 5 | switch-buddy-admin said its connection to Switch was down | Only the buddy was affected; coordinator and scout still answered. Used Claude Code + switch-docs for questions instead |
 | Nov 5 | Couldn't find the room documents the agents created | Documents live on the Switch server, not in Mattermost. The native local server (Console 0.31, Windows) ships no web dashboard: http://localhost:<api port>/ only answers "Missing or invalid Authorization header". Ports are in %APPDATA%\switchdash\local-switch-server\ports.json. Workaround: ask the agent to paste the document into the room. Fix (Nov 6): coordinator and scout also save each document as a .md file in their workspace folder, so it can be read, committed and shown to judges |
 | Nov 5 | T5: the PI's "Approved" was refused too. The coordinator said it came from "user", not the PI (saraht3ch) | Console creates the main Mattermost account with the username `user`; agents see that username, and "Sarah Chowdhury" is only the display name. Fix: rerun fill-local.ps1 with PI username `user`, paste the new room instructions into a fresh room (research-room-2), rerun T5. Don't rename the main account: Console signs in to Mattermost as `user` |
+| Nov 6 | Every Claude Code agent (experimenter, switch-buddy-admin) heard the room but couldn't reply: "invalid response" from the Switch tools on 127.0.0.1:<port>, a new port each session. Cursor/Grok agents fine. Updating Claude Code didn't help | Cause: AVG antivirus Web Shield intercepting Claude Code's HTTP traffic, including loopback. Evidence: `claude mcp list` showed `InvalidHTTPResponse` on every HTTP MCP server while `curl.exe` got a clean 200 from the same URLs and there was no proxy. Fix: turned AVG off and Claude agents replied. Permanent fix: AVG exceptions for claude.exe and for http://127.0.0.1/* and http://localhost/* (or turn off Web Shield's HTTPS scanning) |
 |  |  |  |
 
 ## Day 1, Nov 4: room, coordinator, scout
@@ -47,8 +48,8 @@ Add a line the moment something breaks, not at the end of the day.
 - T7 rate:
 - T8 dig:
 - T9 no made-up papers:
-- T10 baseline (accuracy):
-- T11 rerun by hand (same number?):
+- T10 baseline (accuracy): failed on scope, not behavior. The coordinator's Methodology was paper-scale (ResNet-20, CIFAR-10, 2 noise levels x 3 smoothing settings x 5 seeds = 30 runs), so the baseline only reached 32.54% on a cut-down budget. The experimenter followed the Methodology, fixed its own 60 s overrun, and asked the PI how to handle the budget instead of guessing. Fix: the Methodology now has a compute budget field (hardware and time per script, from the PI, or "not given") and is sized to fit it. On its first request in a room, the experimenter detects the machine's specs, asks the requester for a time limit if none is given, and proposes a smaller plan for PI approval if the runs won't fit. The demo's first message states the budget ("under a minute each on my laptop CPU").
+- T11 rerun by hand (same number?): pass. 32.54%, same as posted, 18.2 s (the agent's own run took 51.3 s).
 - T12 gate waits:
 - T13 only the PI's approval counts:
 - T14 results table:
