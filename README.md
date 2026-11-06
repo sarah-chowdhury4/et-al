@@ -23,7 +23,7 @@ Built for the Flip the Switch hackathon (WeMakeDevs x DevTools Academy x Switch)
 
 ## Getting started
 
-Setup takes about an hour, most of it waiting for installs. It works on Windows, macOS and Linux. Where commands differ, both versions are given: **Windows** commands run in PowerShell 7 (`pwsh`, not the older Windows PowerShell), and **macOS / Linux** commands run in bash or zsh. The two setup scripts are PowerShell scripts and run on all three systems through PowerShell 7.
+Setup takes about an hour, most of it waiting for installs. It works on Windows, macOS and Linux. Where commands differ, both versions are given: **Windows** commands run in PowerShell 7 (`pwsh`, not the older Windows PowerShell), and **macOS / Linux** commands run in bash or zsh. The two setup scripts come in both forms: `.ps1` for Windows and `.sh` for macOS and Linux.
 
 ### Prerequisites
 
@@ -33,7 +33,7 @@ Setup takes about an hour, most of it waiting for installs. It works on Windows,
 | [Docker](https://docs.docker.com/get-docker/): Docker Desktop on Windows and macOS, Docker Engine on Linux | The bundled Mattermost chat | `docker run hello-world` |
 | [Node.js LTS](https://nodejs.org/) | `npx`, required by Switch | `npx -v` |
 | [Python 3.10+](https://www.python.org/) | The experiments | `python --version` (Windows), `python3 --version` (macOS / Linux) |
-| [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) | The setup scripts | `pwsh --version` |
+| [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (Windows only) | The setup scripts | `pwsh --version` |
 | [Switch Console](https://github.com/sandbox-quantum/switch/releases) | Running the Switch server and agents | Opens and shows "Local server is running" |
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code), signed in | The experimenter agent | `claude --version` |
 | [Cursor CLI](https://cursor.com/cli), signed in, with a Grok model | The coordinator and scout agents | `cursor-agent --version` |
@@ -41,8 +41,8 @@ Setup takes about an hour, most of it waiting for installs. It works on Windows,
 Platform notes:
 
 - **Windows:** install PowerShell 7 with `winget install Microsoft.PowerShell`. Windows ships only the older Windows PowerShell 5.1.
-- **macOS:** with [Homebrew](https://brew.sh/), `brew install git node python powershell` covers Git, Node.js, Python and PowerShell 7. Install Docker Desktop separately. Switch Console's macOS build is its stable release.
-- **Linux (Debian / Ubuntu):** `sudo apt install git python3 python3-venv docker.io docker-compose-v2`, then `sudo usermod -aG docker $USER` and log out and back in so Docker runs without `sudo`. Install Node.js LTS from nodejs.org and PowerShell 7 from Microsoft's [Linux instructions](https://learn.microsoft.com/powershell/scripting/install/install-ubuntu). Switch Console's Linux build is early access.
+- **macOS:** with [Homebrew](https://brew.sh/), `brew install git node python` covers Git, Node.js and Python. Install Docker Desktop separately. Switch Console's macOS build is its stable release.
+- **Linux (Debian / Ubuntu):** `sudo apt install git python3 python3-venv docker.io docker-compose-v2`, then `sudo usermod -aG docker $USER` and log out and back in so Docker runs without `sudo`. Install Node.js LTS from nodejs.org. Switch Console's Linux build is early access.
 
 Keep the project in a folder whose path has no spaces, such as `C:\research` or `~/research`. Agents can trip over paths with spaces. The rest of this guide calls that folder the *project folder*.
 
@@ -105,7 +105,7 @@ To add the student:
 **macOS / Linux:**
 
 ```bash
-pwsh ./scripts/fill-local.ps1
+bash scripts/fill-local.sh
 ```
 
 The script asks four questions:
@@ -130,7 +130,7 @@ Then check everything:
 **macOS / Linux:**
 
 ```bash
-pwsh ./scripts/check-setup.ps1
+bash scripts/check-setup.sh
 ```
 
 Fix any line marked `FAIL`, from the top down, and run it again until it passes.
@@ -311,8 +311,10 @@ et-al/
 ├── templates/
 │   └── et-al.template.yaml  Switch template: three agents and the room
 ├── scripts/
-│   ├── fill-local.ps1       Fills in usernames, email and paths; writes local/
-│   └── check-setup.ps1      Checks tools, repo, Python, filled files and network
+│   ├── fill-local.ps1       Fills in usernames, email and paths; writes local/ (Windows)
+│   ├── fill-local.sh        The same, for macOS and Linux
+│   ├── check-setup.ps1      Checks tools, repo, Python, filled files and network (Windows)
+│   └── check-setup.sh       The same, for macOS and Linux
 ├── workspace/               Each agent's working directory
 │   ├── coordinator/         Timeline, Methodology, Decisions log, Lab notebook
 │   ├── scout/               Literature
@@ -320,19 +322,19 @@ et-al/
 ├── demo/
 │   └── script.md            The demo, message by message
 ├── docs/                    Screenshots and build notes
-└── local/                   Filled copies (git-ignored, created by fill-local.ps1)
+└── local/                   Filled copies (git-ignored, created by the fill-local script)
 ```
 
-To change an agent's behavior, edit its file in `agents/`, run `fill-local.ps1` again, and paste the new copy from `local/agents/` into the agent's instructions in Switch Console. Switch keeps agent settings outside the repo, so the files in `agents/` and `room/` are the source of truth.
+To change an agent's behavior, edit its file in `agents/`, run the fill-local script again, and paste the new copy from `local/agents/` into the agent's instructions in Switch Console. Switch keeps agent settings outside the repo, so the files in `agents/` and `room/` are the source of truth.
 
 ## Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
 | An agent doesn't reply to a mention | Check that **Auto-create session on notify** is on and **Who can talk to your agent** is set to **Anyone** |
-| The PI's "Approved" is refused | The room instructions must name the PI by Mattermost username. The account Switch Console creates is `user`, not its display name. Run `fill-local.ps1` with `user` as the PI and paste the new room instructions |
+| The PI's "Approved" is refused | The room instructions must name the PI by Mattermost username. The account Switch Console creates is `user`, not its display name. Run the fill-local script again with `user` as the PI and paste the new room instructions |
 | An agent receives messages but can't post or read the room, or reports that its Switch connection is down | Its session is using an old connection address. Fully quit and reopen Switch Console, close the agent's existing sessions, and mention it again. If that fails, remove the agent and onboard it again |
-| The experimenter fails with "module not found" | It's using the wrong Python. Check the path in `local/agents/experimenter.md` and run `check-setup.ps1` |
+| The experimenter fails with "module not found" | It's using the wrong Python. Check the path in `local/agents/experimenter.md` and run the check-setup script |
 | A paper link doesn't open or doesn't match its title | The scout answered from memory. Restart its session and repeat the request; its instructions require OpenAlex links only |
 | Room creation fails | Add a room description |
 | Docker or the local server won't start | Start Docker (Docker Desktop, or `sudo systemctl start docker` on Linux) and wait until `docker ps` works, then restart Switch Console |
@@ -345,4 +347,4 @@ To change an agent's behavior, edit its file in `agents/`, run `fill-local.ps1` 
 - `rate` is the scout's judgment, not a measurement, and it says so.
 - The scout reads abstracts and reference lists, not full papers.
 - The demo experiment is deliberately small. A real lab would point the experimenter at its own datasets and compute.
-- Built and tested end to end on Windows with Switch Console's early-access Windows build. The macOS and Linux steps use the same tools and the setup scripts run on PowerShell 7 there, but a full demo run hasn't been tested on those systems.
+- Built and tested end to end on Windows with Switch Console's early-access Windows build. The macOS and Linux steps use the same tools, and the bash setup scripts produce the same files as the PowerShell ones, but a full demo run hasn't been tested on those systems.
