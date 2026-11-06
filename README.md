@@ -30,31 +30,31 @@ Setup takes about an hour, most of it waiting for installs. It works on Windows,
 | Tool | Used for | Check |
 | --- | --- | --- |
 | [Git](https://git-scm.com/) | Cloning the repo | `git --version` |
-| [Docker](https://docs.docker.com/get-docker/): Docker Desktop on Windows and macOS, Docker Engine on Linux | The bundled Mattermost chat | `docker run hello-world` |
+| [Docker](https://docs.docker.com/get-docker/): Docker Desktop or Rancher Desktop on Windows (no WSL needed) and macOS, Docker Engine on Linux | The local Switch server | `docker run hello-world` |
 | [Node.js LTS](https://nodejs.org/) | `npx`, required by Switch | `npx -v` |
 | [Python 3.10+](https://www.python.org/) | The experiments | `python --version` (Windows), `python3 --version` (macOS / Linux) |
 | [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (Windows only) | The setup scripts | `pwsh --version` |
-| [Switch Console](https://github.com/sandbox-quantum/switch/releases) | Running the Switch server and agents | Opens and shows "Local server is running" |
+| [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console.md) | Running the Switch server and agents | Opens with the **Setting up Switch** checklist in the sidebar |
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code), signed in | The experimenter agent | `claude --version` |
 | [Cursor CLI](https://cursor.com/cli), signed in, with a Grok model | The coordinator and scout agents | `cursor-agent --version` |
 
 Platform notes:
 
-- **Windows:** install PowerShell 7 with `winget install Microsoft.PowerShell`. Windows ships only the older Windows PowerShell 5.1.
-- **macOS:** with [Homebrew](https://brew.sh/), `brew install git node python` covers Git, Node.js and Python. Install Docker Desktop separately. Switch Console's macOS build is its stable release.
-- **Linux (Debian / Ubuntu):** `sudo apt install git python3 python3-venv docker.io docker-compose-v2`, then `sudo usermod -aG docker $USER` and log out and back in so Docker runs without `sudo`. Install Node.js LTS from nodejs.org. Switch Console's Linux build is early access.
+- **Windows:** install PowerShell 7 with `winget install Microsoft.PowerShell`. Windows ships only the older Windows PowerShell 5.1. Install Switch Console with the `.exe` installer (or the `.msi`); the Windows build is early access.
+- **macOS:** with [Homebrew](https://brew.sh/), `brew install git node python` covers Git, Node.js and Python. Install Docker Desktop or Rancher Desktop separately. Install Switch Console from the `.dmg` (Apple silicon or Intel) by dragging it into Applications. The macOS build is Switch's stable release.
+- **Linux (Debian / Ubuntu):** `sudo apt install git python3 python3-venv docker.io docker-compose-v2`, then `sudo usermod -aG docker $USER` and log out and back in so Docker runs without `sudo`. Install Node.js LTS from nodejs.org. Install Switch Console from the `.deb` with `sudo apt install ./switch-console-amd64.deb` (use `apt`, not `dpkg -i`, so dependencies resolve; the AppImage needs FUSE 2, which Ubuntu 24.04 and later can block). The Linux build is early access.
 
-Keep the project in a folder whose path has no spaces, such as `C:\research` or `~/research`. Agents can trip over paths with spaces. The rest of this guide calls that folder the *project folder*.
+The project can live anywhere, as long as the folder's path has no spaces; agents can trip over paths with spaces. The rest of this guide calls that folder the *project folder*.
 
 ### 1. Clone the repo and create the Python environment
 
-The Python environment lives next to the repo, not inside it.
+Create a project folder in any location and clone the repo into it. The Python environment goes in the same folder, next to the repo, which is where the setup scripts look for it by default. The commands below create a folder called `research` in the current directory; any name and location work.
 
 **Windows:**
 
 ```powershell
-mkdir C:\research
-cd C:\research
+mkdir research
+cd research
 git clone https://github.com/GITHUB-USERNAME/et-al.git
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -68,8 +68,8 @@ If `Activate.ps1` reports that running scripts is disabled, run `Set-ExecutionPo
 **macOS / Linux:**
 
 ```bash
-mkdir -p ~/research
-cd ~/research
+mkdir research
+cd research
 git clone https://github.com/GITHUB-USERNAME/et-al.git
 python3 -m venv .venv
 source .venv/bin/activate
@@ -80,13 +80,17 @@ cd et-al
 
 ### 2. Start Switch
 
-1. Start Docker: open Docker Desktop (Windows, macOS) and wait for it to finish starting, or on Linux make sure the service is running with `sudo systemctl start docker`.
-2. Open Switch Console. Choose **Add Server**, then **Run a Server on this computer**, then **Start**. Wait for "Local server is running". The first start downloads images and takes a few minutes.
-3. Go to **Settings → Agent Providers**. For both **Claude Code** and **Cursor**, install the provider and its Switch connector where Console offers them, and wait until each shows **Installed**.
+1. **Start Docker** and wait until `docker ps` works: open Docker Desktop or Rancher Desktop (Windows, macOS), or on Linux run `sudo systemctl start docker`.
+2. **Sign in to both agent providers** outside Switch Console:
+   - Claude Code: `claude auth login`
+   - Cursor CLI: sign in as described in [Cursor's CLI docs](https://cursor.com/cli)
+3. **Open Switch Console** and go to **Settings → Agent providers**. The status line under both **Claude Code** and **Cursor** must read **Signed in**. The **Installed** badge alone isn't enough. After signing in, select **Recheck**. If a provider still shows **CLI not installed**, fully quit Switch Console and reopen it, since it reads `PATH` only at startup. To fully quit: **Cmd+Q** on macOS, close the window on Windows, `pkill -x switch-console` on Linux.
+4. **Add a server.** In the **Setting up Switch** checklist in the sidebar, choose **Add a server**, then **Run a server on this computer**, and start it. The first start downloads several GB. The server keeps running when Switch Console quits, but it doesn't restart after the computer restarts; open Switch Console to start it again.
+5. **Sign in to Mattermost.** On the server's **Home** page, under **Messaging apps**, select **Sign-in details…** on the Mattermost row. It shows the address, username and password of the Mattermost account Switch created for you, and Switch links that account to you automatically. This account is the PI.
 
 ### 3. Create the student account
 
-The demo has two people: a PI and a student. The PI is the Mattermost account Switch Console creates. Its username is `user`, shown under **Settings → Messaging apps → Mattermost → sign-in details**.
+The demo has two people: a PI and a student. The PI is the Mattermost account from **Sign-in details…** in step 2. Note its username; on a local server it is `user`. Agents identify senders by username, not display name.
 
 To add the student:
 
@@ -112,7 +116,7 @@ The script asks four questions:
 
 | Question | Answer |
 | --- | --- |
-| PI Mattermost username | `user` |
+| PI Mattermost username | The username from **Sign-in details…** (`user` on a local server) |
 | Student Mattermost username | The username from step 3 |
 | Email for OpenAlex | Any email you own. OpenAlex asks API users for one. |
 | Path to the experimenter's Python | Press Enter to accept the default: the `.venv` in the project folder (`.venv\Scripts\python.exe` on Windows, `.venv/bin/python` on macOS and Linux) |
@@ -141,35 +145,40 @@ Choose one of the two options below.
 
 #### Option A: Import the template
 
-1. In Switch Console, open **Templates**, choose **Import template**, and select `local/templates/et-al.template.yaml`.
-2. Run it. It creates the three agents, the `research-room` room with both people in it, and the room instructions.
-3. Open the coordinator and the scout in Console, and choose a Grok model under **Advanced Configuration**.
+1. In Switch Console, open **Templates**, select **Import template**, and supply `local/templates/et-al.template.yaml`.
+2. On the **Templates** page, select **Use** on the imported template, fill in the fields, and select **Create all**. This creates the three agents, the `research-room` room with both people in it, and the room instructions.
+3. Open the coordinator and the scout under **Your Agents** and set a Grok model in the **Model** field of **Advanced configuration**.
 
-The agent names must be free. Remove any existing `coordinator`, `scout` or `experimenter` agents first.
+Requirements: the agent names must be free (remove any existing `coordinator`, `scout` or `experimenter` first), both providers must be signed in, and the server must have agent management turned on. If the run reports that agent management is off, use Option B.
 
 #### Option B: Set it up by hand
 
-Onboard each agent in Switch Console with these settings:
+In Switch Console, open **Your Agents** in the sidebar and select the dashed card with a plus to onboard each agent:
 
 | Field | coordinator | scout | experimenter |
 | --- | --- | --- | --- |
+| Name | `coordinator` | `scout` | `experimenter` |
 | Description | Plans the project and keeps its documents | Finds and digs into research papers | Writes, runs, and debugs experiments following the methodology |
+| Agent instructions | `local/agents/coordinator.md` | `local/agents/scout.md` | `local/agents/experimenter.md` |
 | Run location | This computer | This computer | This computer |
 | Directory | `<project folder>/et-al/workspace/coordinator` | `<project folder>/et-al/workspace/scout` | `<project folder>/et-al/workspace/experimenter` |
-| Provider | Cursor, Grok model | Cursor, Grok model | Claude Code, Sonnet |
-| Instructions | `local/agents/coordinator.md` | `local/agents/scout.md` | `local/agents/experimenter.md` |
-| Tools | Web fetch, read/write files | Web fetch, read/write files | Read/write files, shell |
+| Agent provider | Cursor | Cursor | Claude Code |
+| Advanced configuration → Model | A Grok model | A Grok model | `sonnet` |
+| Advanced configuration → Disallowed tools | (leave empty) | (leave empty) | `WebFetch, WebSearch` |
 
-For all three agents:
+Name, run location and directory can't be changed after the agent is created.
 
-| Setting | Value |
-| --- | --- |
-| Auto-create session on notify | On |
-| Bypass permissions | On |
-| Can manage agents | Off |
-| Who can talk to your agent | Anyone |
+For all three agents, under **Settings** in the same form:
 
-Use the full path for each directory, for example `C:\research\et-al\workspace\coordinator` on Windows or `/Users/you/research/et-al/workspace/coordinator` on macOS.
+| Setting | Value | Why |
+| --- | --- | --- |
+| Bypass permissions | On | Off by default on this computer. Without it, agents stop at permission prompts nobody in the room can see. |
+| Who can talk to your agent | Anyone | The default, **Me and my agents**, ignores the student account. **Anyone** includes people in the agent's rooms without a Switch account. |
+| Can manage agents | Off | Not needed; it lets an agent create agents on your machines. |
+
+Select **Add agent** to create each one. If you change **Bypass permissions** later, stop and restart the agent's session for it to take effect.
+
+Use the full path for each directory. To print the full path of the `workspace` folder, run `(Resolve-Path workspace).Path` (Windows) or `echo "$(pwd)/workspace"` (macOS / Linux) from the `et-al` folder.
 
 Copy an instructions file to the clipboard with:
 
@@ -179,17 +188,19 @@ Copy an instructions file to the clipboard with:
 | macOS | `pbcopy < local/agents/coordinator.md` |
 | Linux | `xclip -selection clipboard < local/agents/coordinator.md` (or `wl-copy < local/agents/coordinator.md` on Wayland) |
 
-Then create the room in Switch Console:
+Then, in Switch Console, select **Your Rooms**, then **Create room**:
 
 | Field | Value |
 | --- | --- |
+| Messaging app | Mattermost |
 | Name | `research-room` |
 | Description | Research team room: PI, student, coordinator, scout and experimenter agents. |
 | Agents | coordinator, scout, experimenter |
-| People | `user` and the student account |
 | Instructions | Contents of `local/room/instructions.md` |
 
-The description is required. Room creation fails without it.
+Fill in the description; room creation can fail without one.
+
+The room appears as a Mattermost channel. People join a room by joining its channel: in Mattermost, open the `research-room` channel and add the student account (and the PI account, if it isn't already a member) with **Add members**. Switch adds channel members to the room. An agent left out of the form can be added from the channel with `!invite-agent @agent-name`.
 
 ### 6. Check the agents respond
 
@@ -199,7 +210,7 @@ As the student, post:
 @coordinator reply with one word: ready
 ```
 
-Repeat for `@scout` and `@experimenter`. Each should answer in the room within a minute. If one doesn't, see [Troubleshooting](#troubleshooting).
+Repeat for `@scout` and `@experimenter`. Each should answer in the room within a minute. To see every agent's state at once, post `!agents-status` as its own message: 🟢 live, no marker dormant (wakes when mentioned), ⚪ no session, 🔴 disconnected, ✋ waiting on a permission request. If an agent doesn't answer, see [Troubleshooting](#troubleshooting).
 
 ## Running the demo
 
@@ -230,7 +241,7 @@ Anyone in the room can use these. `N` is a paper number from the Literature docu
 
 ### Viewing the documents
 
-The agents keep five documents: Timeline, Literature, Methodology, Decisions log and Lab notebook. They are saved to the room and also written as Markdown files in `workspace/coordinator/` and `workspace/scout/`. To see a document in the chat, ask for it:
+The agents keep five documents: Timeline, Literature, Methodology, Decisions log and Lab notebook. They are stored in the room and also written as Markdown files in `workspace/coordinator/` and `workspace/scout/`. Post `!list-documents` in the room to list the room's documents. To read one in the chat, ask the agent that keeps it:
 
 ```
 @coordinator paste the Timeline document here.
@@ -331,14 +342,20 @@ To change an agent's behavior, edit its file in `agents/`, run the fill-local sc
 
 | Problem | Fix |
 | --- | --- |
-| An agent doesn't reply to a mention | Check that **Auto-create session on notify** is on and **Who can talk to your agent** is set to **Anyone** |
+| An agent doesn't reply to a mention | Post `!agents-status` to see its state. Check the thread under your message, since replies often land there. Mention the agent by its exact name, and don't end the sentence right after the name: a trailing period becomes part of it |
+| "You're not permitted to direct messages to me in this room" | Set **Who can talk to your agent** to **Anyone** in the agent's settings |
+| "I'm not online in this room" | Open Switch Console on the computer that runs the agent. Agents run by Switch Console stop answering when it quits |
+| ✋ in `!agents-status`, or the agent goes silent mid-task | It's waiting on a permission request. Answer it in the room, or turn on **Bypass permissions** and restart the agent's session |
+| A session never starts | The provider is likely waiting on a folder-trust prompt. Make sure **Settings → General → Auto-trust worktree directories** is on |
 | The PI's "Approved" is refused | The room instructions must name the PI by Mattermost username. The account Switch Console creates is `user`, not its display name. Run the fill-local script again with `user` as the PI and paste the new room instructions |
-| An agent receives messages but can't post or read the room, or reports that its Switch connection is down | Its session is using an old connection address. Fully quit and reopen Switch Console, close the agent's existing sessions, and mention it again. If that fails, remove the agent and onboard it again |
+| An agent receives messages but can't post or read the room, or reports that its Switch connection is down | Fully quit and reopen Switch Console (this also helps after a network change such as a VPN reconnect), then post `!reset @agent-name` in the room and mention the agent again. If that fails, remove the agent and onboard it again |
+| A provider shows **CLI not installed** after installing it | Fully quit and reopen Switch Console, which reads `PATH` only at startup: **Cmd+Q** on macOS, close the window on Windows, `pkill -x switch-console` on Linux |
 | The experimenter fails with "module not found" | It's using the wrong Python. Check the path in `local/agents/experimenter.md` and run the check-setup script |
 | A paper link doesn't open or doesn't match its title | The scout answered from memory. Restart its session and repeat the request; its instructions require OpenAlex links only |
-| Room creation fails | Add a room description |
-| Docker or the local server won't start | Start Docker (Docker Desktop, or `sudo systemctl start docker` on Linux) and wait until `docker ps` works, then restart Switch Console |
-| `docker` needs `sudo` on Linux | Add yourself to the `docker` group with `sudo usermod -aG docker $USER`, then log out and back in |
+| Room creation fails | Fill in the room description. If **Create room** doesn't respond, sign in to the server first |
+| Docker or the local server won't start | Start Docker (Docker Desktop or Rancher Desktop, or `sudo systemctl start docker` on Linux) and wait until `docker ps` works, then restart Switch Console. After a computer restart, open Switch Console to start the server again |
+| `docker` needs `sudo` on Linux | Add yourself to the `docker` group with `sudo usermod -aG docker $USER`, then log out and back in (reboot if `id` still doesn't list the group) |
+| No Switch Console window on Linux | Common under Wayland, often in a VM. See the [Switch troubleshooting page](https://docs.switchagents.ai/switch-rooms/resources/troubleshooting.md) |
 | `fill-local.ps1` won't run on Windows | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` in PowerShell 7 |
 
 ## Limitations

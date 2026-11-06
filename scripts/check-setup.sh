@@ -43,7 +43,7 @@ if have docker; then
     if docker ps --format '{{.Names}} {{.Image}}' 2>/dev/null | grep -qiE 'switch|mattermost'; then
       pass "Switch / Mattermost containers are up"
     else
-      warn "No Switch or Mattermost container running" "Switch Console: start the local server and wait for \"Local server is running\""
+      warn "No Switch or Mattermost container running" "Start the local server from Switch Console (Add a server, then Run a server on this computer)"
     fi
   elif [ "$(uname)" = "Linux" ] && sudo -n true 2>/dev/null && sudo docker ps >/dev/null 2>&1; then
     fail "Docker only works with sudo" "sudo usermod -aG docker \$USER, then log out and back in"

@@ -40,7 +40,7 @@ if (Have docker) {
         Pass 'Docker is running'
         $names = (docker ps --format '{{.Names}} {{.Image}}' 2>$null) -join "`n"
         if ($names -match '(?i)switch|mattermost') { Pass 'Switch / Mattermost containers are up' }
-        else { Warn 'No Switch or Mattermost container running' 'Switch Console: start the local server and wait for "Local server is running"' }
+        else { Warn 'No Switch or Mattermost container running' 'Start the local server from Switch Console (Add a server, then Run a server on this computer)' }
     }
     else { Fail 'Docker is installed but not running' 'Open Docker Desktop and wait for it to finish starting (Linux: sudo systemctl start docker)' }
 }
