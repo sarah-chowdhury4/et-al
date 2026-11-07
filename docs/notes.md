@@ -87,3 +87,4 @@ Add a line the moment something breaks, not at the end of the day.
 - Template: a Cursor model param for the coordinator and scout, so importing needs no manual model edit.
 - Not changed: mention-by-name handoff, bypass permissions, digits and the one-minute budget, label smoothing only in the PI's first message.
 - Template made importable straight from a clone: the PI is {$creator}, and the student, OpenAlex email, Python path and Cursor model are form fields. The template is generated from templates/et-al.template.src.yaml plus agents/ and room/ by scripts/build-template (ps1 and sh), so instructions live in one place. fill-local is now only for setting up agents by hand.
+- Nov 7: Switch couldn't find the Grok 4.7 model on this PC, so the template no longer sets a model for the Cursor agents; they use Cursor's default, and a model can be set later in Advanced configuration.

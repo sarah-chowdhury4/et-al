@@ -36,7 +36,7 @@ Setup takes about an hour, most of it waiting for installs. It works on Windows,
 | [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (Windows only) | The setup scripts | `pwsh --version` |
 | [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console.md) | Running the Switch server and agents | Opens with the **Setting up Switch** checklist in the sidebar |
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code), signed in | The experimenter agent | `claude --version` |
-| [Cursor CLI](https://cursor.com/cli), signed in, with a Grok model | The coordinator and scout agents | `cursor-agent --version` |
+| [Cursor CLI](https://cursor.com/cli), signed in | The coordinator and scout agents | `cursor-agent --version` |
 
 Platform notes:
 
@@ -131,10 +131,10 @@ Choose one of the two options below.
    | Student's username | The student account from step 3 |
    | Email for OpenAlex | Any email you own. OpenAlex asks API users for one. |
    | Python for experiments | The full path to the environment from step 1: `<project folder>\.venv\Scripts\python.exe` on Windows, `<project folder>/.venv/bin/python` on macOS and Linux |
-   | Cursor model | A Grok model id from Cursor's model list |
    | Directory (advanced, optional) | By default each agent gets a folder under Switch Console's agents folder. To keep the agents' scripts and documents in your clone, use the full path of its `workspace` folder followed by `/{agent}` |
 
 3. Select **Create all**. This creates the three agents with their instructions, the room with you (the PI) and the student in it, and the room instructions. The kickoff message asks each agent to say it's ready.
+4. Optional: the coordinator and scout use Cursor's default model. To choose one, such as a Grok model, open each under **Your Agents** and set **Model** in **Advanced configuration**. If the agent then reports that it can't find the model, clear the field to go back to the default.
 
 Requirements: the agent names must be free (remove any existing `coordinator`, `scout` or `experimenter` first), both providers must be signed in, and the server must have agent management turned on. If the run reports that agent management is off, use Option B.
 
@@ -167,7 +167,7 @@ In Switch Console, open **Your Agents** in the sidebar and select the dashed car
 | Run location | This computer | This computer | This computer |
 | Directory | `<project folder>/et-al/workspace/coordinator` | `<project folder>/et-al/workspace/scout` | `<project folder>/et-al/workspace/experimenter` |
 | Agent provider | Cursor | Cursor | Claude Code |
-| Advanced configuration → Model | A Grok model | A Grok model | `sonnet` |
+| Advanced configuration → Model | Optional; empty uses Cursor's default | Optional; empty uses Cursor's default | `sonnet` |
 | Advanced configuration → Disallowed tools | (leave empty) | (leave empty) | `WebFetch, WebSearch` |
 
 Name, run location and directory can't be changed after the agent is created.

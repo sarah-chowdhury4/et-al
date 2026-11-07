@@ -28,10 +28,6 @@ params:
     type: string
     label: Python for experiments
     description: Full path to a Python with torch, scikit-learn, numpy and matplotlib, such as the .venv next to the repo (.venv\Scripts\python.exe on Windows, .venv/bin/python on macOS and Linux).
-  cursor_model:
-    type: string
-    label: Cursor model
-    description: Model id for the coordinator and scout, a Grok model from Cursor's model list.
   location:
     type: location
     description: The machine all three agents run on.
@@ -52,7 +48,8 @@ agents:
     description: Plans the project and keeps its documents
     addressing: anyone
     provider: cursor
-    model: "{cursor_model}"
+    # No model: Cursor's default is used. Pick one later in the agent's
+    # Advanced configuration if you want a specific model.
     location: "{location}"
     directory: "{directory}"
     auto_approve: true
@@ -81,7 +78,8 @@ agents:
     description: Finds and digs into research papers
     addressing: anyone
     provider: cursor
-    model: "{cursor_model}"
+    # No model: Cursor's default is used. Pick one later in the agent's
+    # Advanced configuration if you want a specific model.
     location: "{location}"
     directory: "{directory}"
     auto_approve: true
