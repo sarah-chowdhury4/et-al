@@ -35,7 +35,13 @@ Wait for 5 new numbered papers under "From paper 3". Then:
 
 ## 4. Methodology
 
-Wait for the coordinator's Methodology draft (hypothesis, data and noise, model, metric, baseline, comparison, seeds). As the **PI**:
+Wait for the coordinator's Methodology draft (hypothesis, data and noise, model, metric, baseline, comparison, seeds, claim rule "not set", compute budget). Before the PI locks it, as the **Student**:
+
+```
+@coordinator 20% noise and 3 seeds cannot carry a workshop claim. Add a claim rule: we claim an effect only if label smoothing beats hard labels by more than the larger of the two standard deviations. Then ask the PI again.
+```
+
+Wait for the revised Methodology with the claim rule, still unlocked, asking the PI again. Then as the **PI**:
 
 ```
 @coordinator Approved.
@@ -62,7 +68,7 @@ As the **Student**:
 @experimenter Approved.
 ```
 
-Wait for the refusal ("Only the PI can approve experiments"). Then as the **PI**:
+Wait for the refusal naming the student's username, and the coordinator logging the refused attempt in the Decisions log. Then as the **PI**:
 
 ```
 @experimenter Approved.
@@ -70,11 +76,11 @@ Wait for the refusal ("Only the PI can approve experiments"). Then as the **PI**
 
 ## 7. Results
 
-No message. Wait for the 3-seed table (setting | mean accuracy | std), the line confirming it matched the Methodology, and "@coordinator".
+No message. Wait for the 3-seed table (setting | mean accuracy | std), the line confirming it matched the Methodology, the claim rule verdict with its numbers, and "@coordinator".
 
 ## 8. Record
 
-No message. Wait for the coordinator to update the Decisions log, mark tasks done in the Timeline, add a Lab notebook entry, and name the next milestone. Done.
+No message. Wait for the coordinator to update the Decisions log, mark tasks done in the Timeline, add a Lab notebook entry ending in "Claim" or "No claim" with the numbers, and name the next milestone. Done.
 
 ## Timing for the video
 
@@ -82,7 +88,7 @@ No message. Wait for the coordinator to update the Decisions log, mark tasks don
 | --- | --- | --- |
 | 1 to 2 | longest (scout reads ~10 records) | yes |
 | 3 | medium | yes |
-| 4 | short | no |
+| 4 | short | no, the student's claim rule is a highlight |
 | 5 | medium (writes and runs code) | yes |
 | 6 | short | no, the refusal is the highlight |
 | 7 to 8 | medium | yes |

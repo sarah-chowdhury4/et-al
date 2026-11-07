@@ -55,7 +55,7 @@ Create a project folder in any location and clone the repo into it. The Python e
 ```powershell
 mkdir research
 cd research
-git clone https://github.com/GITHUB-USERNAME/et-al.git
+git clone https://github.com/sarah-chowdhury4/et-al.git
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install torch --index-url https://download.pytorch.org/whl/cpu
@@ -70,7 +70,7 @@ If `Activate.ps1` reports that running scripts is disabled, run `Set-ExecutionPo
 ```bash
 mkdir research
 cd research
-git clone https://github.com/GITHUB-USERNAME/et-al.git
+git clone https://github.com/sarah-chowdhury4/et-al.git
 python3 -m venv .venv
 source .venv/bin/activate
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # on macOS: pip install torch
@@ -147,7 +147,7 @@ Choose one of the two options below.
 
 1. In Switch Console, open **Templates**, select **Import template**, and supply `local/templates/et-al.template.yaml`.
 2. On the **Templates** page, select **Use** on the imported template, fill in the fields, and select **Create all**. This creates the three agents, the `research-room` room with both people in it, and the room instructions.
-3. Open the coordinator and the scout under **Your Agents** and set a Grok model in the **Model** field of **Advanced configuration**.
+3. The form's **Cursor model** field sets the model for the coordinator and scout: enter a Grok model id from Cursor's model list.
 
 Requirements: the agent names must be free (remove any existing `coordinator`, `scout` or `experimenter` first), both providers must be signed in, and the server must have agent management turned on. If the run reports that agent management is off, use Option B.
 
@@ -221,11 +221,12 @@ Use a fresh room for each run, set up the same way as `research-room`, so earlie
 | 1. Idea | PI | `@coordinator New project: does label smoothing help a small network trained on noisy labels? Target is a workshop paper, deadline Dec 1. Experiments must run on my laptop CPU in under a minute each. Please set up a plan.` |
 | 2. Foundations | — | Wait for the scout's Literature list |
 | 3. Dig | PI | `@scout dig 3`, then `@scout summary 3` |
-| 4. Methodology | PI | `@coordinator Approved.` |
-| 5. Baseline | Student | `@experimenter Can you set up a baseline following the Methodology?` |
-| 6. The gate | Student, then PI | `@experimenter Approved.` (refused for the student), then the same from the PI |
-| 7. Results | — | Wait for the 3-seed table |
-| 8. Record | — | Wait for the coordinator's log update |
+| 4. Claim rule | Student | `@coordinator 20% noise and 3 seeds cannot carry a workshop claim. Add a claim rule: we claim an effect only if label smoothing beats hard labels by more than the larger of the two standard deviations. Then ask the PI again.` |
+| 5. Methodology | PI | `@coordinator Approved.` |
+| 6. Baseline | Student | `@experimenter Can you set up a baseline following the Methodology?` |
+| 7. The gate | Student, then PI | `@experimenter Approved.` (refused and logged for the student), then the same from the PI |
+| 8. Results | — | Wait for the 3-seed table and the claim rule verdict |
+| 9. Record | — | Wait for the Lab notebook entry ending in "Claim" or "No claim" |
 
 The longest waits are the scout reading paper records and the experimenter running code.
 
@@ -254,7 +255,7 @@ Five members share one room: two people and three agents.
 | Member | Runs on | Role |
 | --- | --- | --- |
 | PI | Person | Sets the question and deadline, digs into papers, approves the methodology and every experiment |
-| Student | Person | Requests experiments and follows up on tasks |
+| Student | Person | Challenges the draft Methodology (adds the claim rule before it's locked), requests experiments, and follows up on tasks. Can't approve anything |
 | `@coordinator` | Cursor + Grok | Writes the Timeline, drafts the Methodology, keeps the Decisions log and Lab notebook |
 | `@scout` | Cursor + Grok | Finds foundation papers grouped by theory and answers paper commands. Every paper comes from [OpenAlex](https://openalex.org/), never from model memory |
 | `@experimenter` | Claude Code + Sonnet | Writes, runs and debugs experiments that follow the Methodology. Never runs one without the PI's approval |
@@ -263,11 +264,11 @@ The workflow:
 
 1. **Idea.** The PI posts a research question and a deadline. The coordinator restates the question, writes a Timeline of 4 to 6 tasks with owners and due dates, and asks the scout for papers.
 2. **Foundations.** The scout breaks the idea into the 3 to 4 theories it rests on and lists about 10 foundational papers, numbered, with citation counts and OpenAlex links.
-3. **Methodology.** The coordinator drafts the hypothesis, data, model, metric, baseline, comparison, number of seeds and compute budget, sized to fit the hardware and time limit the PI gave. The PI approves it, and the approval goes into the Decisions log.
+3. **Methodology.** The coordinator drafts the hypothesis, data, model, metric, baseline, comparison, number of seeds, claim rule and compute budget, sized to fit the hardware and time limit the PI gave. Before the PI locks it, the student adds a claim rule: an effect counts only if label smoothing beats hard labels by more than the larger standard deviation. The coordinator revises the draft and asks the PI again. The PI's approval goes into the Decisions log, so the rule is fixed before any comparison runs.
 4. **Baseline.** The student asks for a baseline. The experimenter detects the machine's specs and checks that the Methodology fits its compute budget, asking for a time limit if none was given. It then writes `baseline.py`, runs it, fixes its own errors, and reports the test accuracy, posting progress updates as it goes.
-5. **The gate.** The experimenter proposes the comparison and waits. It checks the sender of every "Approved" against the PI named in the room instructions, so the student's approval is refused.
-6. **Results.** After the PI approves, the experimenter runs `ablation.py` with 3 seeds per setting and posts a table, with a line confirming it followed the Methodology.
-7. **Record.** The coordinator logs the result, marks tasks done, adds a dated Lab notebook entry, and names the next milestone.
+5. **The gate.** The experimenter proposes the comparison and waits. It checks the sender of every "Approved" against the PI named in the room instructions. When the student approves, it refuses by username and the coordinator records the attempt in the Decisions log, so the gate leaves a record after the chat scrolls away.
+6. **Results.** After the PI approves, the experimenter runs `ablation.py` with 3 seeds per setting and posts a table, with a line confirming it followed the Methodology and a plain verdict on the claim rule, with the numbers.
+7. **Record.** The coordinator logs the result, marks tasks done, and adds a dated Lab notebook entry whose last line is "Claim" or "No claim" with the deciding numbers: a pre-registered decision, not just a table. Then it names the next milestone.
 
 The demo question: does label smoothing help a small network trained on noisy labels? It uses scikit-learn's digits dataset with 20% of training labels flipped to a wrong class, a small PyTorch network, and a clean test set. Each script runs on a CPU in under a minute.
 
@@ -279,7 +280,7 @@ Et Al. depends on Switch to turn three separate coding agents into teammates in 
 - **Agents as teammates.** Each agent is onboarded in Switch Console with its own working directory, provider, instructions and permissions, and responds only when mentioned by name.
 - **Any agent, any model.** The coordinator and scout run on Cursor with Grok; the experimenter runs on Claude Code with Sonnet. Switch puts them in the same room without either needing to know what the other runs on.
 - **Handoffs by mention.** The coordinator asks `@scout` for papers, the scout tells `@coordinator` they're ready, and the experimenter tells `@coordinator` when results are in. There is no orchestration code: agents address each other in the room.
-- **Room instructions.** The room tells every agent who the PI and the student are. The experimenter uses this to refuse approvals from anyone but the PI.
+- **Room instructions as shared laws.** The room's instructions name the PI and the student and set four laws every member reads on joining: only the PI approves, papers come only from OpenAlex, results are copied from script output, and the claim rule is fixed before the comparison runs. The agents' own instructions repeat the laws that apply to them, but the room is where a new agent learns them.
 - **Room documents.** Timeline, Literature, Methodology, Decisions log and Lab notebook are stored in the room, next to the conversation that produced them.
 - **Templates.** [`templates/et-al.template.yaml`](templates/et-al.template.yaml) creates all three agents and the room in a single import.
 

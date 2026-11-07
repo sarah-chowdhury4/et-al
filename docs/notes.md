@@ -78,3 +78,11 @@ Add a line the moment something breaks, not at the end of the day.
 2. How Switch made it work: rooms, agents as teammates, documents, handoffs, two models in one room
 3. What broke and how I fixed it (from the issue log)
 4. What I'd do next
+
+## Nov 7: changes from review feedback
+
+- Student adds a claim rule before the PI locks the Methodology ("claim an effect only if label smoothing beats hard labels by more than the larger of the two standard deviations"). The coordinator revises without locking, the PI approves, the experimenter states whether the rule passed, and the Lab notebook ends in Claim or No claim. With the Nov 6 digits numbers (92.59 +/- 1.64 vs 93.85 +/- 1.54, difference 1.26 < 1.64) that is No claim.
+- Room instructions now hold four shared laws: only the PI approves, OpenAlex only, results copied from script output, claim rule fixed before the comparison.
+- Refused approvals become records: the experimenter names the sender and mentions the coordinator, who logs the attempt in the Decisions log.
+- Template: a Cursor model param for the coordinator and scout, so importing needs no manual model edit.
+- Not changed: mention-by-name handoff, bypass permissions, digits and the one-minute budget, label smoothing only in the PI's first message.

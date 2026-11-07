@@ -30,6 +30,10 @@ params:
     description: Each agent's working directory, inside the repo's workspace folder.
     default: "WORKSPACE-DIR/{agent}"
     input: advanced
+  cursor_model:
+    type: string
+    label: Cursor model
+    description: Model id for the coordinator and scout, a Grok model from Cursor's model list.
   bridge:
     type: bridge
     description: Where the room is mirrored. The server's default app (Mattermost) is chosen.
@@ -40,7 +44,7 @@ agents:
     description: Plans the project and keeps its documents
     addressing: anyone
     provider: cursor
-    # model: set the Grok model in Console after import (agent, Advanced Configuration)
+    model: "{cursor_model}"
     location: "{location}"
     directory: "{directory}"
     auto_approve: true
@@ -50,7 +54,7 @@ agents:
     description: Finds and digs into research papers
     addressing: anyone
     provider: cursor
-    # model: set the Grok model in Console after import (agent, Advanced Configuration)
+    model: "{cursor_model}"
     location: "{location}"
     directory: "{directory}"
     auto_approve: true
