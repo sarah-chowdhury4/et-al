@@ -98,32 +98,7 @@ To add the student:
 2. In the main menu, choose **Invite People** and copy the invite link.
 3. Open the link in a private browser window and sign up. Note the username.
 
-### 4. Fill in local settings
-
-**Windows:**
-
-```powershell
-.\scripts\fill-local.ps1
-```
-
-**macOS / Linux:**
-
-```bash
-bash scripts/fill-local.sh
-```
-
-The script asks four questions:
-
-| Question | Answer |
-| --- | --- |
-| PI Mattermost username | The username from **Sign-in details…** (`user` on a local server) |
-| Student Mattermost username | The username from step 3 |
-| Email for OpenAlex | Any email you own. OpenAlex asks API users for one. |
-| Path to the experimenter's Python | Press Enter to accept the default: the `.venv` in the project folder (`.venv\Scripts\python.exe` on Windows, `.venv/bin/python` on macOS and Linux) |
-
-It writes filled copies of the agent instructions, the room instructions and the Switch template to `local/`. Git ignores that folder, so usernames and email never reach the repo. Paste and import from `local/`, never from the placeholder files in `agents/`, `room/` or `templates/`. Answers are saved in `local/answers.json`, so later runs only need Enter.
-
-Then check everything:
+### 4. Check your setup
 
 **Windows:**
 
@@ -137,21 +112,50 @@ Then check everything:
 bash scripts/check-setup.sh
 ```
 
-Fix any line marked `FAIL`, from the top down, and run it again until it passes.
+It checks your tools, Docker, the repo, the template, the experiment Python (with a short test experiment) and access to OpenAlex. Fix any line marked `FAIL`, from the top down, and run it again until it passes. If you haven't created the Python environment at the default location, the Python check fails until you point it at yours: run the fill-local script from Option B below, or ignore that line if you use the template.
 
 ### 5. Create the agents and the room
 
 Choose one of the two options below.
 
-#### Option A: Import the template
+#### Option A: Import the template (recommended)
 
-1. In Switch Console, open **Templates**, select **Import template**, and supply `local/templates/et-al.template.yaml`.
-2. On the **Templates** page, select **Use** on the imported template, fill in the fields, and select **Create all**. This creates the three agents, the `research-room` room with both people in it, and the room instructions.
-3. The form's **Cursor model** field sets the model for the coordinator and scout: enter a Grok model id from Cursor's model list.
+`templates/et-al.template.yaml` is ready to import as it is; nothing needs filling in first.
+
+1. In Switch Console, open **Templates**, select **Import template**, and choose `templates/et-al.template.yaml` from your clone.
+2. On the **Templates** page, select **Use** on the imported template and fill in the form:
+
+   | Field | Value |
+   | --- | --- |
+   | Room name | A new name for each run, such as `research-room` |
+   | Student's username | The student account from step 3 |
+   | Email for OpenAlex | Any email you own. OpenAlex asks API users for one. |
+   | Python for experiments | The full path to the environment from step 1: `<project folder>\.venv\Scripts\python.exe` on Windows, `<project folder>/.venv/bin/python` on macOS and Linux |
+   | Cursor model | A Grok model id from Cursor's model list |
+   | Directory (advanced, optional) | By default each agent gets a folder under Switch Console's agents folder. To keep the agents' scripts and documents in your clone, use the full path of its `workspace` folder followed by `/{agent}` |
+
+3. Select **Create all**. This creates the three agents with their instructions, the room with you (the PI) and the student in it, and the room instructions. The kickoff message asks each agent to say it's ready.
 
 Requirements: the agent names must be free (remove any existing `coordinator`, `scout` or `experimenter` first), both providers must be signed in, and the server must have agent management turned on. If the run reports that agent management is off, use Option B.
 
 #### Option B: Set it up by hand
+
+First, fill in your details. The script asks four questions and writes filled copies of the agent and room instructions to `local/`, which Git ignores:
+
+| System | Command |
+| --- | --- |
+| Windows | `.\scripts\fill-local.ps1` |
+| macOS / Linux | `bash scripts/fill-local.sh` |
+
+| Question | Answer |
+| --- | --- |
+| PI Mattermost username | The username from **Sign-in details…** (`user` on a local server) |
+| Student Mattermost username | The username from step 3 |
+| Email for OpenAlex | Any email you own |
+| Path to the experimenter's Python | Press Enter to accept the default: the `.venv` in the project folder |
+
+Paste from `local/`, never from the placeholder files in `agents/` and `room/`. Answers are saved in `local/answers.json`, so later runs only need Enter.
+
 
 In Switch Console, open **Your Agents** in the sidebar and select the dashed card with a plus to onboard each agent:
 
@@ -321,11 +325,14 @@ et-al/
 ├── room/
 │   └── instructions.md      The room's instructions (with placeholders)
 ├── templates/
-│   └── et-al.template.yaml  Switch template: three agents and the room
+│   ├── et-al.template.yaml      Switch template, ready to import (generated)
+│   └── et-al.template.src.yaml  Its source: settings plus #include lines
 ├── scripts/
-│   ├── fill-local.ps1       Fills in usernames, email and paths; writes local/ (Windows)
+│   ├── build-template.ps1   Builds the template from its source and agents/, room/ (Windows)
+│   ├── build-template.sh    The same, for macOS and Linux
+│   ├── fill-local.ps1       Fills in usernames, email and paths for setup by hand (Windows)
 │   ├── fill-local.sh        The same, for macOS and Linux
-│   ├── check-setup.ps1      Checks tools, repo, Python, filled files and network (Windows)
+│   ├── check-setup.ps1      Checks tools, repo, template, Python and network (Windows)
 │   └── check-setup.sh       The same, for macOS and Linux
 ├── workspace/               Each agent's working directory
 │   ├── coordinator/         Timeline, Methodology, Decisions log, Lab notebook
@@ -337,7 +344,7 @@ et-al/
 └── local/                   Filled copies (git-ignored, created by the fill-local script)
 ```
 
-To change an agent's behavior, edit its file in `agents/`, run the fill-local script again, and paste the new copy from `local/agents/` into the agent's instructions in Switch Console. Switch keeps agent settings outside the repo, so the files in `agents/` and `room/` are the source of truth.
+To change an agent's behavior, edit its file in `agents/` (or `room/instructions.md` for the room), then rebuild the template with `.\scripts\build-template.ps1` (Windows) or `bash scripts/build-template.sh` (macOS / Linux) and commit both. For agents set up by hand, also run the fill-local script again and paste the new copy from `local/agents/` into the agent's instructions in Switch Console. Switch keeps agent settings outside the repo, so the files in `agents/` and `room/` are the source of truth, and the template is generated from them.
 
 ## Troubleshooting
 

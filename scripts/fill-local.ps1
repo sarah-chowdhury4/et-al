@@ -1,11 +1,14 @@
 # fill-local.ps1
-# Makes filled copies of every instruction file and the template in local\
+# Makes filled copies of every instruction file in local\ for setting up
+# the agents by hand (README, Option B). The template doesn't need this:
+# import templates\et-al.template.yaml directly.
+# Copies go in local\
 # (Git ignores local\). The files in the repo keep their placeholders:
 #   PI-USERNAME, STUDENT-USERNAME, YOUR-EMAIL, PYTHON-PATH
 # Paste into Console from local\, never from the placeholder files.
 #
 # Run from the et-al folder:  .\scripts\fill-local.ps1
-# Rerun any time you edit agents\, room\ or templates\. Your answers are
+# Rerun any time you edit agents\ or room\. Your answers are
 # remembered in local\answers.json, so you can just press Enter.
 
 $ErrorActionPreference = 'Stop'
@@ -61,8 +64,6 @@ $map = [ordered]@{
     'PI-USERNAME'      = $pi
     'YOUR-EMAIL'       = $email
     'PYTHON-PATH'      = $python
-    # Forward slashes: YAML and Windows both accept them
-    'WORKSPACE-DIR'    = ((Join-Path $root 'workspace') -replace '\\', '/')
 }
 
 function Fill([string]$text) {
@@ -89,42 +90,7 @@ foreach ($rel in $sources) {
     $written += "local\$rel"
 }
 
-# 2. Template: replace each "#include <file>" line with that file, filled and
-#    indented to match the line it replaces.
-$tplRel = 'templates\et-al.template.yaml'
-$tplLines = (Read-Text $tplRel) -split "`n"
-$outLines = New-Object System.Collections.Generic.List[string]
-$outLines.Add('# Et Al. template, filled by scripts/fill-local.ps1. Import this copy in')
-$outLines.Add('# Switch Console: Templates, then Import template. Edit the repo files and')
-$outLines.Add('# rerun fill-local.ps1 rather than editing this one.')
-$inHeader = $true
-foreach ($line in $tplLines) {
-    # Drop the repo copy's header comment (it says not to import that file)
-    if ($inHeader) {
-        if ($line -match '^\s*#' -or $line.Trim() -eq '') { continue }
-        $inHeader = $false
-    }
-    if ($line -match '^(\s*)#include\s+(\S+)\s*$') {
-        $indent = $Matches[1]
-        $inc = $Matches[2] -replace '/', '\'
-        $body = Fill (Read-Text $inc)
-        if ($body -match '\{') {
-            Write-Host "  Warning: $inc contains '{'. Switch templates treat {name} as a parameter." -ForegroundColor Yellow
-        }
-        foreach ($b in ($body -split "`n")) {
-            if ($b.Trim() -eq '') { $outLines.Add('') } else { $outLines.Add($indent + $b) }
-        }
-    }
-    else {
-        $outLines.Add((Fill $line))
-    }
-}
-$tplOut = Join-Path $local $tplRel
-New-Item -ItemType Directory -Force -Path (Split-Path -Parent $tplOut) | Out-Null
-Set-Content -Path $tplOut -Value (($outLines -join "`n") + "`n") -Encoding utf8 -NoNewline
-$written += "local\$tplRel"
-
-# 3. Leftover placeholders?
+# 2. Leftover placeholders?
 $left = @()
 foreach ($w in $written) {
     $t = Get-Content (Join-Path $root $w) -Raw

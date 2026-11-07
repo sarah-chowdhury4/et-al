@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # fill-local.sh (macOS and Linux; Windows uses fill-local.ps1)
-# Makes filled copies of every instruction file and the template in local/
+# Makes filled copies of every instruction file in local/ for setting up
+# the agents by hand (README, Option B). The template doesn't need this:
+# import templates/et-al.template.yaml directly.
+# Copies go in local/
 # (Git ignores local/). The files in the repo keep their placeholders:
-#   PI-USERNAME, STUDENT-USERNAME, YOUR-EMAIL, PYTHON-PATH, WORKSPACE-DIR
+#   PI-USERNAME, STUDENT-USERNAME, YOUR-EMAIL, PYTHON-PATH
 # Paste into Switch Console from local/, never from the placeholder files.
 #
 # Run from anywhere:  bash scripts/fill-local.sh
-# Rerun any time you edit agents/, room/ or templates/. Your answers are
+# Rerun any time you edit agents/ or room/. Your answers are
 # remembered in local/answers.json, so you can just press Enter.
 # Works with the bash 3.2 and BSD awk that ship with macOS.
 
@@ -75,8 +78,7 @@ cat > "$ANSWERS" <<EOF
 }
 EOF
 
-WORKSPACE="$ROOT/workspace"
-export FILL_PI="$pi" FILL_STUDENT="$student" FILL_EMAIL="$email" FILL_PYTHON="$python" FILL_WORKSPACE="$WORKSPACE" FILL_ROOT="$ROOT"
+export FILL_PI="$pi" FILL_STUDENT="$student" FILL_EMAIL="$email" FILL_PYTHON="$python" FILL_ROOT="$ROOT"
 
 # Literal (non-regex) placeholder replacement, line endings normalised to LF.
 # Template mode also strips the repo copy's header comment and expands
@@ -92,7 +94,6 @@ function fill(s) {
   s = lit(s, "PI-USERNAME",      ENVIRON["FILL_PI"])
   s = lit(s, "YOUR-EMAIL",       ENVIRON["FILL_EMAIL"])
   s = lit(s, "PYTHON-PATH",      ENVIRON["FILL_PYTHON"])
-  s = lit(s, "WORKSPACE-DIR",    ENVIRON["FILL_WORKSPACE"])
   return s
 }
 BEGIN {
@@ -137,18 +138,12 @@ for rel in agents/coordinator.md agents/scout.md agents/experimenter.md room/ins
   written+=("local/$rel")
 done
 
-tpl=templates/et-al.template.yaml
-[ -f "$ROOT/$tpl" ] || { echo "${RED}Missing file: $tpl${RESET}" >&2; exit 1; }
-mkdir -p "$LOCAL/templates"
-awk -v template=1 "$FILL_AWK" "$ROOT/$tpl" > "$LOCAL/$tpl"
-written+=("local/$tpl")
-
 left=0
 echo
 echo "${GREEN}Wrote:${RESET}"
 for w in "${written[@]}"; do
   echo "  $w"
-  for k in PI-USERNAME STUDENT-USERNAME YOUR-EMAIL PYTHON-PATH WORKSPACE-DIR; do
+  for k in PI-USERNAME STUDENT-USERNAME YOUR-EMAIL PYTHON-PATH; do
     if grep -q -- "$k" "$ROOT/$w"; then echo "${RED}  $w still has $k${RESET}"; left=1; fi
   done
 done

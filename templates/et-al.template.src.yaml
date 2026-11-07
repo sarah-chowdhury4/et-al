@@ -1,0 +1,97 @@
+# Et Al.: a research room with three agents on two models.
+#
+# Follows the format of examples/agent-templates/triage-pair.template.yaml in
+# the Switch repo (language: docs/TEMPLATES.md).
+#
+# Source file. Each "#include" line is replaced with that file from agents/
+# or room/, and the placeholders PI-USERNAME, STUDENT-USERNAME, YOUR-EMAIL and
+# PYTHON-PATH become the template's own {params}. Build the importable
+# template with scripts/build-template.ps1 (Windows) or
+# scripts/build-template.sh (macOS / Linux) after editing agents/, room/ or
+# this file.
+version: 1
+
+params:
+  room_name:
+    type: string
+    label: Room name
+    description: Use a new name each run; archived rooms may keep theirs.
+    default: research-room
+    pattern: "[a-z][a-z0-9-]*"
+  student:
+    type: user
+    label: Student's username
+    description: A second Mattermost account that plays the student. It joins the room and can request experiments, but can't approve anything. You, the person running this template, are the PI.
+  openalex_email:
+    type: string
+    label: Email for OpenAlex
+    description: Any email you own. The scout sends it with its OpenAlex requests, as OpenAlex asks API users to.
+    pattern: "[^@ ]+@[^@ ]+[.][^@ ]+"
+  python:
+    type: string
+    label: Python for experiments
+    description: Full path to a Python with torch, scikit-learn, numpy and matplotlib, such as the .venv next to the repo (.venv\Scripts\python.exe on Windows, .venv/bin/python on macOS and Linux).
+  cursor_model:
+    type: string
+    label: Cursor model
+    description: Model id for the coordinator and scout, a Grok model from Cursor's model list.
+  location:
+    type: location
+    description: The machine all three agents run on.
+    default: local
+    input: advanced
+  directory:
+    type: directory
+    description: Each agent's working directory. To keep the agents' scripts and documents in your clone of the repo, use the full path of its workspace folder followed by /{agent}.
+    default: "{$agents_dir}/{agent}"
+    input: advanced
+  bridge:
+    type: bridge
+    description: Where the room is mirrored. The server's default app (Mattermost) is chosen.
+    default: [$first]
+
+agents:
+  - name: "coordinator"
+    description: Plans the project and keeps its documents
+    addressing: anyone
+    provider: cursor
+    model: "{cursor_model}"
+    location: "{location}"
+    directory: "{directory}"
+    auto_approve: true
+    instructions: |
+      #include agents/coordinator.md
+  - name: "scout"
+    description: Finds and digs into research papers
+    addressing: anyone
+    provider: cursor
+    model: "{cursor_model}"
+    location: "{location}"
+    directory: "{directory}"
+    auto_approve: true
+    instructions: |
+      #include agents/scout.md
+  - name: "experimenter"
+    description: Writes, runs, and debugs experiments following the methodology
+    addressing: anyone
+    provider: claude
+    model: sonnet
+    location: "{location}"
+    directory: "{directory}"
+    auto_approve: true
+    instructions: |
+      #include agents/experimenter.md
+
+# The room is created on the messaging app the `bridge` input names.
+# {$creator} (you, the PI) and the student account join it.
+room:
+  name: "{room_name}"
+  description: "Research team room: PI, student, coordinator, scout and experimenter agents."
+  bridge: "{bridge}"
+  instructions: |
+    #include room/instructions.md
+  agents: ["coordinator", "scout", "experimenter"]
+  users: ["{$creator}", "{student}"]
+
+kickoff: |
+  @coordinator, @scout and @experimenter: this is the research room. Reply with one line saying you're ready, then wait for the PI's first message.

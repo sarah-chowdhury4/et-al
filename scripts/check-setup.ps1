@@ -79,7 +79,7 @@ try {
     }
 
     $need = @('README.md', 'agents\coordinator.md', 'agents\scout.md', 'agents\experimenter.md',
-        'room\instructions.md', 'templates\et-al.template.yaml', 'demo\script.md', 'docs\notes.md',
+        'room\instructions.md', 'templates\et-al.template.yaml', 'templates\et-al.template.src.yaml', 'demo\script.md', 'docs\notes.md',
         'workspace\coordinator', 'workspace\scout', 'workspace\experimenter')
     $missing = $need | Where-Object { -not (Test-Path (Join-Path $root $_)) }
     if ($missing) { Fail "Missing: $($missing -join ', ')" 'Clone the full repo; files are missing' }
@@ -131,31 +131,41 @@ try {
 finally { Pop-Location }
 
 Write-Host ''
-Write-Host '== Filled copies (local\) ==' -ForegroundColor Cyan
+Write-Host '== Template ==' -ForegroundColor Cyan
+
+$tpl = Join-Path $root 'templates\et-al.template.yaml'
+if (-not (Test-Path $tpl)) { Fail 'templates\et-al.template.yaml missing' 'Run .\scripts\build-template.ps1' }
+else {
+    $tt = Get-Content $tpl -Raw
+    $stale = @('templates\et-al.template.src.yaml', 'agents\coordinator.md', 'agents\scout.md', 'agents\experimenter.md', 'room\instructions.md') |
+        Where-Object { (Test-Path (Join-Path $root $_)) -and ((Get-Item (Join-Path $root $_)).LastWriteTime -gt (Get-Item $tpl).LastWriteTime) }
+    $left = @('PI-USERNAME', 'STUDENT-USERNAME', 'YOUR-EMAIL', 'PYTHON-PATH') | Where-Object { $tt.Contains($_) }
+    if ($tt -match '(?m)^\s*#include\s') { $left += '#include' }
+    if ($left) { Fail "The template still has $($left -join ', ')" 'Run .\scripts\build-template.ps1' }
+    elseif ($stale) { Warn "The template is older than $($stale -join ', ')" 'Run .\scripts\build-template.ps1 and commit the result' }
+    else { Pass 'templates\et-al.template.yaml is built and up to date' }
+}
+
+Write-Host ''
+Write-Host '== Filled copies (local\, for setting up agents by hand) ==' -ForegroundColor Cyan
 
 $answers = $null
 if (Test-Path (Join-Path $local 'answers.json')) {
     $answers = Get-Content (Join-Path $local 'answers.json') -Raw | ConvertFrom-Json
     Pass "fill-local answers: PI=@$($answers.PI), student=@$($answers.STUDENT)"
-}
-else { Fail 'local\answers.json missing' 'Run .\scripts\fill-local.ps1' }
-
-$filled = @('agents\coordinator.md', 'agents\scout.md', 'agents\experimenter.md', 'room\instructions.md', 'templates\et-al.template.yaml')
-foreach ($f in $filled) {
-    $p = Join-Path $local $f
-    if (-not (Test-Path $p)) { Fail "local\$f missing" 'Run .\scripts\fill-local.ps1'; continue }
-    $t = Get-Content $p -Raw
-    $left = @('PI-USERNAME', 'STUDENT-USERNAME', 'YOUR-EMAIL', 'PYTHON-PATH', 'WORKSPACE-DIR') | Where-Object { $t.Contains($_) }
-    if ($t -match '(?m)^\s*#include\s') { $left += '#include' }
-    if ($left) { Fail "local\$f still has $($left -join ', ')" 'Rerun .\scripts\fill-local.ps1' }
-    else {
-        $src = Join-Path $root $f
-        if ((Test-Path $src) -and ((Get-Item $src).LastWriteTime -gt (Get-Item $p).LastWriteTime)) {
+    foreach ($f in @('agents\coordinator.md', 'agents\scout.md', 'agents\experimenter.md', 'room\instructions.md')) {
+        $p = Join-Path $local $f
+        if (-not (Test-Path $p)) { Fail "local\$f missing" 'Run .\scripts\fill-local.ps1'; continue }
+        $t = Get-Content $p -Raw
+        $left = @('PI-USERNAME', 'STUDENT-USERNAME', 'YOUR-EMAIL', 'PYTHON-PATH') | Where-Object { $t.Contains($_) }
+        if ($left) { Fail "local\$f still has $($left -join ', ')" 'Rerun .\scripts\fill-local.ps1' }
+        elseif ((Get-Item (Join-Path $root $f)).LastWriteTime -gt (Get-Item $p).LastWriteTime) {
             Warn "local\$f is older than $f" 'Rerun .\scripts\fill-local.ps1, then re-paste into Console'
         }
         else { Pass "local\$f filled" }
     }
 }
+else { Warn 'No filled copies in local\' 'Fine if you set up with the template. For setting up agents by hand, run .\scripts\fill-local.ps1' }
 
 Write-Host ''
 Write-Host '== Experimenter Python ==' -ForegroundColor Cyan

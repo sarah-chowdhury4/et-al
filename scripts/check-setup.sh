@@ -82,7 +82,7 @@ for entry in ".venv/" "local/"; do
   if grep -qxF "$entry" .gitignore 2>/dev/null; then pass ".gitignore has $entry"; else fail ".gitignore is missing $entry" "Add a line: $entry"; fi
 done
 
-need="README.md agents/coordinator.md agents/scout.md agents/experimenter.md room/instructions.md templates/et-al.template.yaml demo/script.md docs/notes.md workspace/coordinator workspace/scout workspace/experimenter"
+need="README.md agents/coordinator.md agents/scout.md agents/experimenter.md room/instructions.md templates/et-al.template.yaml templates/et-al.template.src.yaml demo/script.md docs/notes.md workspace/coordinator workspace/scout workspace/experimenter"
 missing=""; empty=""
 for f in $need; do
   if [ ! -e "$f" ]; then missing="$missing $f"
@@ -108,21 +108,39 @@ else
   pass "No keys, tokens or email addresses in files Git would publish"
 fi
 
-section "Filled copies (local/)"
+section "Template"
 
-if [ -f "$ANSWERS" ]; then pass "fill-local answers: PI=@$(json_get PI), student=@$(json_get STUDENT)"
-else fail "local/answers.json missing" "Run: bash scripts/fill-local.sh"; fi
-
-for f in agents/coordinator.md agents/scout.md agents/experimenter.md room/instructions.md templates/et-al.template.yaml; do
-  p="$LOCAL/$f"
-  if [ ! -f "$p" ]; then fail "local/$f missing" "Run: bash scripts/fill-local.sh"; continue; fi
+tpl="$ROOT/templates/et-al.template.yaml"
+if [ ! -f "$tpl" ]; then fail "templates/et-al.template.yaml missing" "Run: bash scripts/build-template.sh"
+else
   left=""
-  for k in PI-USERNAME STUDENT-USERNAME YOUR-EMAIL PYTHON-PATH WORKSPACE-DIR; do grep -q -- "$k" "$p" && left="$left $k"; done
-  grep -qE '^[[:space:]]*#include[[:space:]]' "$p" && left="$left #include"
-  if [ -n "$left" ]; then fail "local/$f still has$left" "Rerun: bash scripts/fill-local.sh"
-  elif [ "$ROOT/$f" -nt "$p" ]; then warn "local/$f is older than $f" "Rerun fill-local.sh, then re-paste into Switch Console"
-  else pass "local/$f filled"; fi
-done
+  for k in PI-USERNAME STUDENT-USERNAME YOUR-EMAIL PYTHON-PATH; do grep -q -- "$k" "$tpl" && left="$left $k"; done
+  grep -qE '^[[:space:]]*#include[[:space:]]' "$tpl" && left="$left #include"
+  stale=""
+  for f in templates/et-al.template.src.yaml agents/coordinator.md agents/scout.md agents/experimenter.md room/instructions.md; do
+    [ "$ROOT/$f" -nt "$tpl" ] && stale="$stale $f"
+  done
+  if [ -n "$left" ]; then fail "The template still has$left" "Run: bash scripts/build-template.sh"
+  elif [ -n "$stale" ]; then warn "The template is older than$stale" "Run bash scripts/build-template.sh and commit the result"
+  else pass "templates/et-al.template.yaml is built and up to date"; fi
+fi
+
+section "Filled copies (local/, for setting up agents by hand)"
+
+if [ -f "$ANSWERS" ]; then
+  pass "fill-local answers: PI=@$(json_get PI), student=@$(json_get STUDENT)"
+  for f in agents/coordinator.md agents/scout.md agents/experimenter.md room/instructions.md; do
+    p="$LOCAL/$f"
+    if [ ! -f "$p" ]; then fail "local/$f missing" "Run: bash scripts/fill-local.sh"; continue; fi
+    left=""
+    for k in PI-USERNAME STUDENT-USERNAME YOUR-EMAIL PYTHON-PATH; do grep -q -- "$k" "$p" && left="$left $k"; done
+    if [ -n "$left" ]; then fail "local/$f still has$left" "Rerun: bash scripts/fill-local.sh"
+    elif [ "$ROOT/$f" -nt "$p" ]; then warn "local/$f is older than $f" "Rerun fill-local.sh, then re-paste into Switch Console"
+    else pass "local/$f filled"; fi
+  done
+else
+  warn "No filled copies in local/" "Fine if you set up with the template. For setting up agents by hand, run: bash scripts/fill-local.sh"
+fi
 
 section "Experimenter Python"
 

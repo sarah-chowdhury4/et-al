@@ -86,3 +86,4 @@ Add a line the moment something breaks, not at the end of the day.
 - Refused approvals become records: the experimenter names the sender and mentions the coordinator, who logs the attempt in the Decisions log.
 - Template: a Cursor model param for the coordinator and scout, so importing needs no manual model edit.
 - Not changed: mention-by-name handoff, bypass permissions, digits and the one-minute budget, label smoothing only in the PI's first message.
+- Template made importable straight from a clone: the PI is {$creator}, and the student, OpenAlex email, Python path and Cursor model are form fields. The template is generated from templates/et-al.template.src.yaml plus agents/ and room/ by scripts/build-template (ps1 and sh), so instructions live in one place. fill-local is now only for setting up agents by hand.
