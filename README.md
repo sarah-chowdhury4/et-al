@@ -1,17 +1,24 @@
 # Et Al.
 
-**A research team room where three AI agents, running on two different models, work alongside the people doing the research, and the PI signs off on every step.**
+**A research team room where three AI agents, running on two different agent providers, work alongside the people doing the research, and the PI signs off on every step.**
 
 Et Al. is a [Switch](https://github.com/sandbox-quantum/switch) room that follows a real thesis workflow: idea, literature, methodology, experiments, verification. A scout finds and digs into papers, a coordinator keeps the project planned and on record, and an experimenter turns the agreed methodology into checked results. No experiment runs until the PI replies "Approved".
 
 ![The research room](docs/room.png)
 
-**Demo video:** VIDEO-LINK
+**Demo video:** https://youtu.be/ZGYTCWU7ewU
 
 Built for the Flip the Switch hackathon (WeMakeDevs x DevTools Academy x Switch), Best Business Workflow track.
 
+## The problem
+
+Small research teams lose time to scattered work. The plan lives in one document, the papers in browser tabs, the experiment code on someone's laptop, and the decisions in a chat thread nobody can find again. AI assistants help one person at a time, in a private chat, with no record the rest of the team can see. And an assistant that cites papers from memory, runs experiments nobody agreed to, or decides after the fact what counts as a result does more harm than good.
+
+Et Al. puts the people and the agents in one room with one shared record, and keeps a human in charge of every decision that matters: the plan is approved before anything runs, the rule for claiming a result is fixed before the numbers exist, and every approval and refusal is logged.
+
 ## Contents
 
+- [The problem](#the-problem)
 - [Getting started](#getting-started)
 - [Running the demo](#running-the-demo)
 - [How it works](#how-it-works)
@@ -260,8 +267,8 @@ Five members share one room: two people and three agents.
 | --- | --- | --- |
 | PI | Person | Sets the question and deadline, digs into papers, approves the methodology and every experiment |
 | Student | Person | Challenges the draft Methodology (adds the claim rule before it's locked), requests experiments, and follows up on tasks. Can't approve anything |
-| `@coordinator` | Cursor + Grok | Writes the Timeline, drafts the Methodology, keeps the Decisions log and Lab notebook |
-| `@scout` | Cursor + Grok | Finds foundation papers grouped by theory and answers paper commands. Every paper comes from [OpenAlex](https://openalex.org/), never from model memory |
+| `@coordinator` | Cursor | Writes the Timeline, drafts the Methodology, keeps the Decisions log and Lab notebook |
+| `@scout` | Cursor | Finds foundation papers grouped by theory and answers paper commands. Every paper comes from [OpenAlex](https://openalex.org/), never from model memory |
 | `@experimenter` | Claude Code + Sonnet | Writes, runs and debugs experiments that follow the Methodology. Never runs one without the PI's approval |
 
 The workflow:
@@ -274,7 +281,7 @@ The workflow:
 6. **Results.** After the PI approves, the experimenter runs `ablation.py` with 3 seeds per setting and posts a table, with a line confirming it followed the Methodology and a plain verdict on the claim rule, with the numbers.
 7. **Record.** The coordinator logs the result, marks tasks done, and adds a dated Lab notebook entry whose last line is "Claim" or "No claim" with the deciding numbers: a pre-registered decision, not just a table. Then it names the next milestone.
 
-The demo question: does label smoothing help a small network trained on noisy labels? It uses scikit-learn's digits dataset with 20% of training labels flipped to a wrong class, a small PyTorch network, and a clean test set. Each script runs on a CPU in under a minute.
+The demo question: does label smoothing help a small network trained on noisy labels? The PI gives only the question, a deadline and a compute budget ("under a minute each on my laptop CPU"); the coordinator picks the dataset, noise level, model and seeds to fit. In the recorded run it chose an MNIST subset (5,000 training and 1,000 test images) with 40% of training labels flipped to a wrong class, a two-layer MLP (784 → 256 → 10) trained for 5 epochs, a clean test set and 3 seeds. The whole comparison ran in 11.4 seconds on a CPU.
 
 ## How Switch is used
 
@@ -282,7 +289,7 @@ Et Al. depends on Switch to turn three separate coding agents into teammates in 
 
 - **One room for people and agents.** The PI, the student and all three agents share a single Switch room, mirrored into Mattermost. Everyone sees the same conversation and the same record.
 - **Agents as teammates.** Each agent is onboarded in Switch Console with its own working directory, provider, instructions and permissions, and responds only when mentioned by name.
-- **Any agent, any model.** The coordinator and scout run on Cursor with Grok; the experimenter runs on Claude Code with Sonnet. Switch puts them in the same room without either needing to know what the other runs on.
+- **Any agent, any provider.** The coordinator and scout run on Cursor; the experimenter runs on Claude Code with Sonnet. Switch puts them in the same room without either needing to know what the other runs on, and any of them can move to another provider without changing anyone's instructions.
 - **Handoffs by mention.** The coordinator asks `@scout` for papers, the scout tells `@coordinator` they're ready, and the experimenter tells `@coordinator` when results are in. There is no orchestration code: agents address each other in the room.
 - **Room instructions as shared laws.** The room's instructions name the PI and the student and set four laws every member reads on joining: only the PI approves, papers come only from OpenAlex, results are copied from script output, and the claim rule is fixed before the comparison runs. The agents' own instructions repeat the laws that apply to them, but the room is where a new agent learns them.
 - **Room documents.** Timeline, Literature, Methodology, Decisions log and Lab notebook are stored in the room, next to the conversation that produced them.
@@ -290,9 +297,14 @@ Et Al. depends on Switch to turn three separate coding agents into teammates in 
 
 ## Results
 
-From one demo run: 3 seeds per setting, 20% label noise, clean test set.
+From the recorded run: MNIST subset, 40% label noise, clean test set, 3 seeds per setting.
 
-RESULTS-TABLE
+| Setting | Mean accuracy (%) | Std | Seeds 0 / 1 / 2 |
+| --- | --- | --- | --- |
+| Hard labels (no smoothing) | 88.80 | 0.53 | 88.60 / 88.40 / 89.40 |
+| Label smoothing ε = 0.1 | 88.93 | 0.40 | 89.00 / 88.50 / 89.30 |
+
+**Claim rule** (set by the student and approved by the PI before the comparison ran): claim an effect only if label smoothing beats hard labels by more than the larger of the two standard deviations. The difference is 0.13 points and the larger standard deviation is 0.53, so the Lab notebook records **No claim**. The Decisions log also records the student's refused attempt to approve the run.
 
 The scripts the experimenter wrote are in [`workspace/experimenter/`](workspace/experimenter/). The documents from the same run are in [`workspace/coordinator/`](workspace/coordinator/) and [`workspace/scout/`](workspace/scout/).
 
@@ -359,7 +371,7 @@ To change an agent's behavior, edit its file in `agents/` (or `room/instructions
 | An agent receives messages but can't post or read the room, or reports that its Switch connection is down | Fully quit and reopen Switch Console (this also helps after a network change such as a VPN reconnect), then post `!reset @agent-name` in the room and mention the agent again. If that fails, remove the agent and onboard it again |
 | Claude Code agents hear the room but can't reply, reporting an "invalid response" from `127.0.0.1`, while Cursor agents work | Antivirus web protection is intercepting Claude Code's HTTP traffic, including traffic to the local Switch tools. Confirm with `claude mcp list`: if every HTTP server fails with `InvalidHTTPResponse` while `curl` reaches the same URLs, that's the cause. Add exceptions for the `claude` executable and for `http://127.0.0.1/*` and `http://localhost/*` in the antivirus, or turn off its HTTPS scanning, then restart Switch Console. Seen with AVG Web Shield |
 | A provider shows **CLI not installed** after installing it | Fully quit and reopen Switch Console, which reads `PATH` only at startup: **Cmd+Q** on macOS, close the window on Windows, `pkill -x switch-console` on Linux |
-| The experimenter fails with "module not found" | It's using the wrong Python. Check the path in `local/agents/experimenter.md` and run the check-setup script |
+| The experimenter fails with "module not found" | It's using the wrong Python. Check the **Python for experiments** value you gave the template (or the path in `local/agents/experimenter.md` for setup by hand), and run the check-setup script |
 | A paper link doesn't open or doesn't match its title | The scout answered from memory. Restart its session and repeat the request; its instructions require OpenAlex links only |
 | Room creation fails | Fill in the room description. If **Create room** doesn't respond, sign in to the server first |
 | Docker or the local server won't start | Start Docker (Docker Desktop or Rancher Desktop, or `sudo systemctl start docker` on Linux) and wait until `docker ps` works, then restart Switch Console. After a computer restart, open Switch Console to start the server again |
