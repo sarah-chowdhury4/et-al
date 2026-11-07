@@ -73,7 +73,7 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   remote="$(git remote get-url origin 2>/dev/null || true)"
   if [ -n "$remote" ]; then pass "origin = $remote"; else fail "No origin remote" "git remote add origin https://github.com/YOUR-USERNAME/et-al.git"; fi
   branch="$(git branch --show-current 2>/dev/null || true)"
-  if [ "$branch" = "main" ]; then pass "On branch main"; else warn "On branch '$branch'" "Expected main"; fi
+  if [ "$branch" = "main" ]; then pass "On branch main"; else warn "On branch '$branch'" "Fine while testing on a branch; merge into main when it works"; fi
 else
   fail "et-al is not a git repo" "Clone the repo with git clone (README, Getting started, step 1)"
 fi

@@ -68,7 +68,7 @@ try {
         $remote = (git remote get-url origin 2>$null)
         if ($remote) { Pass "origin = $remote" } else { Fail 'No origin remote' 'git remote add origin https://github.com/YOUR-USERNAME/et-al.git' }
         $branch = (git branch --show-current 2>$null)
-        if ($branch -eq 'main') { Pass 'On branch main' } else { Warn "On branch '$branch'" 'Normal only while testing Stage 2 or 3' }
+        if ($branch -eq 'main') { Pass 'On branch main' } else { Warn "On branch '$branch'" 'Fine while testing on a branch; merge into main when it works' }
     }
     else { Fail 'et-al is not a git repo' 'Clone the repo with git clone (README, Getting started, step 1)' }
 
